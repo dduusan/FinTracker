@@ -1,0 +1,152 @@
+========================================================================
+  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2)
+========================================================================
+
+REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
+
+========================================================================
+1. STRUKTURA FOLDERA
+========================================================================
+
+backend/
+├── src/
+│   ├── config/          → Konfiguracija aplikacije (baza, env varijable, modeli)
+│   ├── middleware/       → Middleware funkcije (error handling, auth u budućnosti)
+│   ├── modules/          → Poslovni moduli (svaki ima router, service, schemas)
+│   │   ├── auth/         → [Faza 3] Autentifikacija
+│   │   ├── transactions/ → CRUD za transakcije (prihodi/rashodi)
+│   │   ├── categories/   → [Faza 2+] Kategorije transakcija
+│   │   ├── budgets/      → [Faza 2+] Budžeti po kategorijama
+│   │   └── dashboard/    → [Faza 5] Statistika i izveštaji
+│   └── utils/            → Pomoćne funkcije (greške, logger)
+├── migrations/           → Alembic migracije baze podataka
+├── tests/
+│   ├── unit/             → Unit testovi
+│   └── integration/      → Integracioni testovi
+└── frontend/             → [Kasnije] React + Next.js
+
+========================================================================
+2. KONFIGURACIONI FAJLOVI (root)
+========================================================================
+
+requirements.txt
+  → Lista svih Python paketa koji se instaliraju sa "pip install -r requirements.txt"
+  → Sadrži: fastapi, uvicorn, sqlalchemy, asyncpg, alembic, pydantic, itd.
+
+.env / .env.example
+  → Environment varijable (DATABASE_URL, APP_PORT, JWT_SECRET...)
+  → .env se NE COMMITUJE u git (u .gitignore je)
+  → .env.example služi kao template za druge developere
+
+.gitignore
+  → Govori git-u koje fajlove da ignoriše (.env, __pycache__, venv...)
+
+========================================================================
+3. src/config/ — KONFIGURACIJA
+========================================================================
+
+settings.py
+  → Učitava environment varijable iz .env fajla koristeći pydantic-settings
+  → Klasa Settings definiše sve env varijable sa default vrednostima
+  → Exportuje "settings" objekat koji se koristi svuda u aplikaciji
+  → Primer: settings.DATABASE_URL, settings.APP_PORT
+
+database.py
+  → Kreira SQLAlchemy async engine (konekcija ka PostgreSQL bazi)
+  → Definiše async_session — factory za kreiranje DB sesija
+  → Base klasa — svi SQLAlchemy modeli nasleđuju ovu klasu
+  → get_db() — FastAPI dependency koji daje DB sesiju po request-u
+    (otvara sesiju na početku requesta, zatvara na kraju)
+
+models.py
+  → Definiše SVE tabele u bazi podataka kao Python klase:
+    - User: korisnici (id, email, password, name, created_at)
+    - Category: kategorije transakcija (id, user_id, name, type, icon)
+    - Transaction: transakcije (id, user_id, category_id, amount, type, description, date)
+    - Budget: budžeti po kategoriji i mesecu (id, user_id, category_id, amount, month)
+  → TransactionType enum: "income" ili "expense"
+  → relationship() definiše veze između tabela (npr. User ima mnogo Transaction-a)
+
+========================================================================
+4. src/utils/ — POMOĆNE FUNKCIJE
+========================================================================
+
+errors.py
+  → Custom klase za greške koje aplikacija može baciti:
+    - AppError: bazna klasa (message + status_code)
+    - NotFoundError(404): resurs nije pronađen
+    - ValidationError(400): nevalidan input
+    - AuthError(401): neautorizovan pristup
+  → Error handler u middleware-u hvata ove greške i vraća JSON odgovor
+
+logger.py
+  → Konfiguriše Python logging sa formatiranim ispisom u konzolu
+  → U development modu loguje DEBUG nivo, inače INFO
+  → Format: "2026-02-10 15:30:00 | INFO     | fintracker | poruka"
+  → Exportuje "logger" objekat koji se koristi svuda
+
+========================================================================
+5. src/modules/transactions/ — TRANSACTIONS MODUL
+========================================================================
+
+schemas.py (Pydantic šeme — VALIDACIJA)
+  → Definiše oblik podataka koji ulaze i izlaze iz API-ja:
+    - TransactionCreate: šta klijent šalje kad pravi transakciju
+      (amount > 0, type, category_id, description, date)
+    - TransactionUpdate: šta klijent može da izmeni (sva polja opciona)
+    - TransactionResponse: šta API vraća klijentu
+    - TransactionFilters: query parametri za filtriranje liste
+      (type, category_id, date_from, date_to, page, per_page)
+  → Pydantic automatski validira podatke i vraća greške ako su nevalidni
+
+service.py (BIZNIS LOGIKA — sve DB operacije)
+  → Funkcije koje rade sa bazom podataka:
+    - create_transaction(): kreira novu transakciju u bazi
+    - get_transactions(): lista transakcija sa filterima i paginacijom
+    - get_transaction_by_id(): jedna transakcija (baca NotFoundError ako ne postoji)
+    - update_transaction(): menja polja transakcije (samo ona koja su poslata)
+    - delete_transaction(): briše transakciju iz baze
+  → Svaka funkcija prima db sesiju i user_id (za izolaciju po korisniku)
+
+router.py (API ENDPOINTI — HTTP rute)
+  → Definiše URL putanje i povezuje ih sa service funkcijama:
+    POST   /api/transactions/          → kreiranje
+    GET    /api/transactions/          → lista (sa filtrima i paginacijom)
+    GET    /api/transactions/{id}      → jedna transakcija
+    PUT    /api/transactions/{id}      → izmena
+    DELETE /api/transactions/{id}      → brisanje
+  → TEMP_USER_ID: privremeni hardcoded user dok ne implementiramo auth (Faza 3)
+  → Depends(get_db): FastAPI automatski otvara/zatvara DB sesiju
+
+========================================================================
+6. src/middleware/ — MIDDLEWARE
+========================================================================
+
+error_handler.py
+  → Dva handler-a koje FastAPI poziva kad se desi greška:
+    - app_error_handler: hvata naše custom greške (AppError, NotFoundError...)
+      i vraća JSON sa odgovarajućim status kodom
+    - generic_error_handler: hvata sve ostale neočekivane greške
+      i vraća generički 500 Internal Server Error
+  → Loguje svaku grešku sa URL-om i metodom
+
+========================================================================
+7. src/app.py — ULAZNA TAČKA APLIKACIJE
+========================================================================
+
+  → Glavni fajl koji pokreće FastAPI server
+  → lifespan(): izvršava se pri pokretanju (kreira tabele) i gašenju servera
+  → Registruje error handler-e i router-e
+  → /api/health endpoint za proveru da li server radi
+  → Pokreće uvicorn sa auto-reload u development modu
+
+========================================================================
+POKRETANJE:
+========================================================================
+
+  1. python -m venv venv              → kreira virtualno okruženje
+  2. venv\Scripts\activate            → aktivira ga (Windows)
+  3. pip install -r requirements.txt  → instalira pakete
+  4. createdb fintracker              → kreira PostgreSQL bazu
+  5. python src/app.py                → pokreće server na localhost:8000
+  6. Otvori http://localhost:8000/docs → Swagger UI za testiranje API-ja
