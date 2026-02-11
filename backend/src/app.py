@@ -7,6 +7,8 @@ from src.config.database import engine, Base
 from src.middleware.error_handler import app_error_handler, generic_error_handler
 from src.modules.auth.router import router as auth_router
 from src.modules.transactions.router import router as transactions_router
+from src.modules.categories.router import router as categories_router
+from src.modules.budgets.router import router as budgets_router
 from src.utils.errors import AppError
 from src.utils.logger import logger
 
@@ -34,6 +36,8 @@ app.add_exception_handler(Exception, generic_error_handler)
 
 app.include_router(auth_router)
 app.include_router(transactions_router)
+app.include_router(categories_router)
+app.include_router(budgets_router)
 
 
 @app.get("/api/health")

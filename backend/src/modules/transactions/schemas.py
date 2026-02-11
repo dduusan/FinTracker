@@ -35,7 +35,7 @@ class TransactionResponse(BaseModel):
     type: TransactionType
     description: Optional[str]
     date: datetime.date
-    created_at: str
+    created_at: datetime.datetime
 
     model_config = {"from_attributes": True}
 

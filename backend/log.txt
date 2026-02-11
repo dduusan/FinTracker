@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2+3)
+  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2+3+4)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -15,8 +15,8 @@ backend/
 │   ├── modules/          → Poslovni moduli (svaki ima router, service, schemas)
 │   │   ├── auth/         → [Faza 3] Autentifikacija
 │   │   ├── transactions/ → CRUD za transakcije (prihodi/rashodi)
-│   │   ├── categories/   → [Faza 2+] Kategorije transakcija
-│   │   ├── budgets/      → [Faza 2+] Budžeti po kategorijama
+│   │   ├── categories/   → [Faza 4] CRUD za kategorije transakcija
+│   │   ├── budgets/      → [Faza 4] Budžeti po kategorijama sa summary
 │   │   └── dashboard/    → [Faza 5] Statistika i izveštaji
 │   └── utils/            → Pomoćne funkcije (greške, logger)
 ├── migrations/           → Alembic migracije baze podataka
@@ -182,9 +182,65 @@ router.py (Auth API endpointi)
 
   → Glavni fajl koji pokreće FastAPI server
   → lifespan(): izvršava se pri pokretanju (kreira tabele) i gašenju servera
-  → Registruje error handler-e i router-e (auth + transactions)
+  → Registruje error handler-e i router-e (auth, transactions, categories, budgets)
   → /api/health endpoint za proveru da li server radi
   → Pokreće uvicorn sa auto-reload u development modu
+
+========================================================================
+10. src/modules/categories/ — CATEGORIES MODUL (Faza 4)
+========================================================================
+
+schemas.py (Pydantic šeme za kategorije)
+  → CategoryCreate: name (1-100 char), type (income/expense), icon (opciono)
+  → CategoryUpdate: sva polja opciona
+  → CategoryResponse: id, name, type, icon
+
+service.py (Categories biznis logika)
+  → create_category(): kreira kategoriju (proverava da ne postoji duplikat)
+  → get_categories(): lista kategorija sa opcionalnim filterom po tipu
+  → get_category_by_id(): jedna kategorija (baca NotFoundError)
+  → update_category(): menja polja kategorije
+  → delete_category(): briše kategoriju
+  → Svaka funkcija izoluje podatke po user_id
+
+router.py (Categories API endpointi)
+  → POST   /api/categories/          → kreiranje nove kategorije
+  → GET    /api/categories/          → lista (filter po type: income/expense)
+  → GET    /api/categories/{id}      → jedna kategorija
+  → PUT    /api/categories/{id}      → izmena
+  → DELETE /api/categories/{id}      → brisanje
+  → Svi endpointi zahtevaju JWT token (get_current_user)
+
+========================================================================
+11. src/modules/budgets/ — BUDGETS MODUL (Faza 4)
+========================================================================
+
+schemas.py (Pydantic šeme za budžete)
+  → BudgetCreate: category_id, amount (>0), month (prvi dan meseca)
+  → BudgetUpdate: amount i month opcioni
+  → BudgetResponse: id, category_id, amount, month
+  → BudgetSummaryItem: category_name, budgeted, spent, remaining, month
+  → BudgetFilters: month, category_id (opcioni filteri)
+
+service.py (Budgets biznis logika)
+  → create_budget(): kreira budžet (proverava kategoriju i duplikat)
+  → get_budgets(): lista budžeta sa filterima (mesec, kategorija)
+  → get_budget_by_id(): jedan budžet (baca NotFoundError)
+  → update_budget(): menja iznos ili mesec
+  → delete_budget(): briše budžet
+  → get_budget_summary(): SPECIJALNA FUNKCIJA
+    - Za dati mesec vraća sve budžete sa potrosenim iznosom
+    - Računa "spent" iz tabele Transaction (expense tip, isti mesec)
+    - Vraća: budgeted, spent, remaining za svaku kategoriju
+
+router.py (Budgets API endpointi)
+  → POST   /api/budgets/             → kreiranje novog budžeta
+  → GET    /api/budgets/             → lista (filter po month, category_id)
+  → GET    /api/budgets/summary?month=2026-02-01 → pregled potrošnje
+  → GET    /api/budgets/{id}         → jedan budžet
+  → PUT    /api/budgets/{id}         → izmena
+  → DELETE /api/budgets/{id}         → brisanje
+  → Svi endpointi zahtevaju JWT token
 
 ========================================================================
 POKRETANJE:
@@ -207,6 +263,30 @@ TESTIRANJE AUTH FLOW-a:
      → dobijaš access_token i refresh_token
   3. Kopiraj access_token i dodaj ga u Swagger "Authorize" dugme:
      Bearer <access_token>
-  4. Sad možeš koristiti /api/transactions/ endpointe
+  4. Sad možeš koristiti sve zaštićene endpointe
   5. GET /api/auth/me → proverava ko si
   6. POST /api/auth/refresh → kad access_token istekne (30 min)
+
+========================================================================
+TESTIRANJE CATEGORIES + BUDGETS (Faza 4):
+========================================================================
+
+  (Prethodno se uloguj i dodaj Bearer token u Swagger)
+
+  CATEGORIES:
+  1. GET  /api/categories/          → lista kategorija (seed je napravio 6)
+  2. POST /api/categories/          → nova kategorija:
+     {"name": "Investicije", "type": "income", "icon": "📈"}
+  3. GET  /api/categories/?type=expense → samo expense kategorije
+  4. PUT  /api/categories/{id}      → izmeni kategoriju
+  5. DELETE /api/categories/{id}    → obriši kategoriju
+
+  BUDGETS:
+  1. POST /api/budgets/             → novi budžet:
+     {"category_id": 3, "amount": 15000, "month": "2026-02-01"}
+  2. GET  /api/budgets/             → lista svih budžeta
+  3. GET  /api/budgets/?month=2026-02-01 → budžeti za februar
+  4. GET  /api/budgets/summary?month=2026-02-01
+     → pregled: koliko je budžetirano vs potrošeno za svaku kategoriju
+  5. PUT  /api/budgets/{id}         → izmeni iznos budžeta
+  6. DELETE /api/budgets/{id}       → obriši budžet
