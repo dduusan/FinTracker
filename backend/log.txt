@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2)
+  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2+3)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -115,12 +115,20 @@ router.py (API ENDPOINTI — HTTP rute)
     GET    /api/transactions/{id}      → jedna transakcija
     PUT    /api/transactions/{id}      → izmena
     DELETE /api/transactions/{id}      → brisanje
-  → TEMP_USER_ID: privremeni hardcoded user dok ne implementiramo auth (Faza 3)
+  → Depends(get_current_user): izvlači korisnika iz JWT tokena (Faza 3)
   → Depends(get_db): FastAPI automatski otvara/zatvara DB sesiju
 
 ========================================================================
 6. src/middleware/ — MIDDLEWARE
 ========================================================================
+
+auth.py (FAZA 3 — JWT auth middleware)
+  → get_current_user(): FastAPI dependency koji:
+    1. Čita Authorization header (Bearer <token>)
+    2. Dekodira JWT token i izvlači user_id
+    3. Učitava korisnika iz baze
+    4. Vraća User objekat koji se koristi u endpoint-ima
+  → Svaki zaštićeni endpoint dodaje: current_user: User = Depends(get_current_user)
 
 error_handler.py
   → Dva handler-a koje FastAPI poziva kad se desi greška:
@@ -131,12 +139,50 @@ error_handler.py
   → Loguje svaku grešku sa URL-om i metodom
 
 ========================================================================
-7. src/app.py — ULAZNA TAČKA APLIKACIJE
+7. src/modules/auth/ — AUTH MODUL (Faza 3)
+========================================================================
+
+schemas.py (Pydantic šeme za auth)
+  → RegisterRequest: email (5-255 char), password (6-128 char), name (opciono)
+  → LoginRequest: email + password
+  → TokenResponse: access_token + refresh_token + token_type
+  → UserResponse: id, email, name (šta API vraća o korisniku)
+
+service.py (Auth biznis logika)
+  → Password:
+    - hash_password(): hešira lozinku sa bcrypt (nikad ne čuvamo plaintext!)
+    - verify_password(): poredi plaintext sa hešom
+  → JWT tokeni:
+    - create_access_token(): kratak token (30 min) za pristup API-ju
+    - create_refresh_token(): dugačak token (7 dana) za obnovu access tokena
+    - decode_token(): dekodira token, proverava tip i istek
+  → User operacije:
+    - register_user(): kreira novog korisnika (proverava da email nije zauzet)
+    - authenticate_user(): proverava email + password, vraća usera
+    - get_user_by_id(): učitava usera po ID-u
+
+router.py (Auth API endpointi)
+  → POST /api/auth/register  → registracija (vraća UserResponse)
+  → POST /api/auth/login     → login (vraća access + refresh token)
+  → POST /api/auth/refresh   → novi access token pomoću refresh tokena
+  → GET  /api/auth/me        → podaci o trenutnom korisniku (zahteva token)
+
+========================================================================
+8. seed.py — TEST PODACI
+========================================================================
+
+  → Skripta koja ubacuje test korisnika i kategorije u bazu:
+    - User: test@test.com / test123
+    - 6 kategorija: Plata, Freelance, Hrana, Transport, Stanarina, Zabava
+  → Pokreće se sa: python seed.py
+
+========================================================================
+9. src/app.py — ULAZNA TAČKA APLIKACIJE
 ========================================================================
 
   → Glavni fajl koji pokreće FastAPI server
   → lifespan(): izvršava se pri pokretanju (kreira tabele) i gašenju servera
-  → Registruje error handler-e i router-e
+  → Registruje error handler-e i router-e (auth + transactions)
   → /api/health endpoint za proveru da li server radi
   → Pokreće uvicorn sa auto-reload u development modu
 
@@ -147,6 +193,20 @@ POKRETANJE:
   1. python -m venv venv              → kreira virtualno okruženje
   2. venv\Scripts\activate            → aktivira ga (Windows)
   3. pip install -r requirements.txt  → instalira pakete
-  4. createdb fintracker              → kreira PostgreSQL bazu
-  5. python src/app.py                → pokreće server na localhost:8000
-  6. Otvori http://localhost:8000/docs → Swagger UI za testiranje API-ja
+  4. docker compose up -d             → pokreće PostgreSQL + Redis u Dockeru
+  5. python seed.py                   → ubacuje test korisnika i kategorije
+  6. python -m uvicorn src.app:app --reload --port 8000  → pokreće server
+  7. Otvori http://localhost:8000/docs → Swagger UI za testiranje API-ja
+
+========================================================================
+TESTIRANJE AUTH FLOW-a:
+========================================================================
+
+  1. POST /api/auth/register → kreiraj nalog (ili koristi seed korisnika)
+  2. POST /api/auth/login    → email: test@test.com, password: test123
+     → dobijaš access_token i refresh_token
+  3. Kopiraj access_token i dodaj ga u Swagger "Authorize" dugme:
+     Bearer <access_token>
+  4. Sad možeš koristiti /api/transactions/ endpointe
+  5. GET /api/auth/me → proverava ko si
+  6. POST /api/auth/refresh → kad access_token istekne (30 min)

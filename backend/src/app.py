@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from src.config.settings import settings
 from src.config.database import engine, Base
 from src.middleware.error_handler import app_error_handler, generic_error_handler
+from src.modules.auth.router import router as auth_router
 from src.modules.transactions.router import router as transactions_router
 from src.utils.errors import AppError
 from src.utils.logger import logger
@@ -31,6 +32,7 @@ app = FastAPI(
 app.add_exception_handler(AppError, app_error_handler)
 app.add_exception_handler(Exception, generic_error_handler)
 
+app.include_router(auth_router)
 app.include_router(transactions_router)
 
 
