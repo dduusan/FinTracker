@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2+3+4)
+  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2+3+4+5)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -17,7 +17,7 @@ backend/
 │   │   ├── transactions/ → CRUD za transakcije (prihodi/rashodi)
 │   │   ├── categories/   → [Faza 4] CRUD za kategorije transakcija
 │   │   ├── budgets/      → [Faza 4] Budžeti po kategorijama sa summary
-│   │   └── dashboard/    → [Faza 5] Statistika i izveštaji
+│   │   └── dashboard/    → [Faza 5] Statistika, trendovi, izveštaji
 │   └── utils/            → Pomoćne funkcije (greške, logger)
 ├── migrations/           → Alembic migracije baze podataka
 ├── tests/
@@ -182,7 +182,7 @@ router.py (Auth API endpointi)
 
   → Glavni fajl koji pokreće FastAPI server
   → lifespan(): izvršava se pri pokretanju (kreira tabele) i gašenju servera
-  → Registruje error handler-e i router-e (auth, transactions, categories, budgets)
+  → Registruje error handler-e i router-e (auth, transactions, categories, budgets, dashboard)
   → /api/health endpoint za proveru da li server radi
   → Pokreće uvicorn sa auto-reload u development modu
 
@@ -243,6 +243,44 @@ router.py (Budgets API endpointi)
   → Svi endpointi zahtevaju JWT token
 
 ========================================================================
+12. src/modules/dashboard/ — DASHBOARD MODUL (Faza 5)
+========================================================================
+
+schemas.py (Pydantic šeme za statistiku)
+  → SummaryResponse: total_income, total_expense, balance, transaction_count
+  → MonthlyItem: month ("2026-02"), income, expense, balance
+  → MonthlyResponse: lista mesečnih stavki + months_count
+  → CategorySpending: category_name, total, percentage, transaction_count
+  → ByCategoryResponse: lista kategorija + grand_total
+  → RecentTransaction: amount, type, description, date, category_name, icon
+
+service.py (Dashboard biznis logika — AGREGACIONI UPITI)
+  → get_summary(): ukupni prihodi, rashodi i bilans za dati period
+    - Koristi SQL CASE + SUM za jednu efikasnu pretragu
+    - Opcioni filteri: date_from, date_to
+  → get_monthly_trends(): mesečni trend za poslednjih N meseci
+    - GROUP BY godina + mesec
+    - Vraća income vs expense za svaki mesec
+  → get_by_category(): potrošnja/prihod po kategorijama
+    - JOIN Transaction + Category
+    - Računa procenat svake kategorije od ukupnog iznosa
+    - Sortirano po iznosu (najveći prvi)
+  → get_recent_transactions(): poslednjih N transakcija
+    - JOIN sa Category za ime i ikonu kategorije
+    - Sortirano po datumu (najnovije prvo)
+
+router.py (Dashboard API endpointi)
+  → GET /api/dashboard/summary?date_from=...&date_to=...
+    → ukupni prihodi, rashodi, bilans za period
+  → GET /api/dashboard/monthly?months=6
+    → mesečni trend (default 6 meseci unazad)
+  → GET /api/dashboard/by-category?type=expense&date_from=...&date_to=...
+    → potrošnja po kategorijama sa procentima
+  → GET /api/dashboard/recent?limit=10
+    → poslednjih N transakcija sa kategorijom
+  → Svi endpointi zahtevaju JWT token
+
+========================================================================
 POKRETANJE:
 ========================================================================
 
@@ -290,3 +328,22 @@ TESTIRANJE CATEGORIES + BUDGETS (Faza 4):
      → pregled: koliko je budžetirano vs potrošeno za svaku kategoriju
   5. PUT  /api/budgets/{id}         → izmeni iznos budžeta
   6. DELETE /api/budgets/{id}       → obriši budžet
+
+========================================================================
+TESTIRANJE DASHBOARD (Faza 5):
+========================================================================
+
+  (Prethodno se uloguj, dodaj Bearer token, i napravi par transakcija)
+
+  1. GET /api/dashboard/summary
+     → ukupni prihodi, rashodi, bilans (svih transakcija)
+  2. GET /api/dashboard/summary?date_from=2026-02-01&date_to=2026-02-28
+     → samo za februar
+  3. GET /api/dashboard/monthly?months=6
+     → mesečni trend za poslednjih 6 meseci
+  4. GET /api/dashboard/by-category?type=expense
+     → koliko si potrošio po kategorijama (sa procentima)
+  5. GET /api/dashboard/by-category?type=income
+     → koliko si zaradio po kategorijama
+  6. GET /api/dashboard/recent?limit=5
+     → poslednjih 5 transakcija sa imenom kategorije
