@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2+3+4+5+6)
+  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2+3+4+5+6+7+8)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -326,6 +326,94 @@ router.py (Dashboard API endpointi)
     - Cache MISS → upit u bazu, rezultat se keršira za 5 min
 
 ========================================================================
+17. tests/ — TESTOVI (Faza 7)
+========================================================================
+
+  Tehnologija: pytest + pytest-asyncio + httpx + aiosqlite
+
+  conftest.py (Test konfiguracija)
+  → SQLite in-memory baza (NE TREBA Docker za testove!)
+  → Mock Redis (testovi rade bez Redis servera)
+  → Fixture-i:
+    - setup_database: kreira/briše tabele pre/posle svakog testa
+    - db: test DB sesija
+    - client: httpx AsyncClient koji komunicira sa FastAPI app-om
+    - test_user: kreira test korisnika (test@test.com / test123)
+    - auth_headers: Authorization header sa validnim JWT tokenom
+    - test_categories: 3 test kategorije (Plata, Hrana, Transport)
+
+  test_auth.py (10 testova)
+  → Registracija: uspešna, dupli email, nevalidan email, kratka šifra
+  → Login: uspešan, pogrešna šifra, nepostojeći korisnik
+  → Refresh: validan token, nevalidan token
+  → Me: sa tokenom, bez tokena
+
+  test_transactions.py (8 testova)
+  → Create: uspešno, bez auth-a, negativan iznos
+  → List: prazna lista, sa podacima, filter po tipu
+  → Get: po ID-u, nepostojeći
+  → Update: izmena iznosa i opisa
+  → Delete: brisanje + provera da ne postoji
+
+  test_categories.py (8 testova)
+  → Create: uspešno, duplikat, bez auth-a
+  → List: sve, filter po tipu, prazna lista
+  → Get: po ID-u, nepostojeći
+  → Update: izmena imena i ikone
+  → Delete: brisanje + provera
+
+  test_budgets.py (8 testova)
+  → Create: uspešno, duplikat (ista kategorija+mesec), nepostojeća kategorija
+  → List: svi, filter po mesecu
+  → Summary: sa potrošnjom (budgeted vs spent vs remaining), prazan mesec
+  → Update: izmena iznosa
+  → Delete: brisanje + provera
+
+  test_dashboard.py (8 testova)
+  → Summary: prazan, sa podacima, sa date filterom, bez auth-a
+  → Monthly: mesečni trend
+  → By-category: expense kategorije, income kategorije
+  → Recent: poslednjih N transakcija, prazna lista
+
+  pytest.ini
+  → asyncio_mode = auto (automatski async testovi)
+  → testpaths = tests
+
+========================================================================
+18. Dockerfile — DOCKER IMAGE (Faza 8)
+========================================================================
+
+  → Python 3.12-slim bazni image (mali footprint)
+  → Instalira requirements.txt
+  → Kopira source kod
+  → Pokreće uvicorn na portu 8000
+  → .dockerignore: isključuje venv/, tests/, __pycache__/, .env
+
+========================================================================
+19. docker-compose.yml — DOCKER COMPOSE (Faza 8)
+========================================================================
+
+  → 3 servisa:
+    - app: FastAPI aplikacija (build iz Dockerfile-a)
+    - postgres: PostgreSQL 16
+    - redis: Redis 7-alpine
+  → Healthcheck-ovi: app čeka da postgres i redis budu healthy
+  → Environment: DATABASE_URL i REDIS_URL koriste Docker DNS (postgres, redis)
+  → JWT_SECRET se čita iz environment varijable ili .env
+  → restart: unless-stopped za sve servise
+
+========================================================================
+20. .github/workflows/ci.yml — CI/CD (Faza 8)
+========================================================================
+
+  → Pokreće se na push/PR ka main grani
+  → 3 posla (jobs):
+    1. test: instalira dependencies, pokreće pytest
+    2. lint: proverava da se app importuje bez greške
+    3. docker: build-uje Docker image (samo na main grani, nakon test+lint)
+  → Testovi koriste SQLite in-memory (ne trebaju Docker servise)
+
+========================================================================
 POKRETANJE:
 ========================================================================
 
@@ -392,3 +480,29 @@ TESTIRANJE DASHBOARD (Faza 5):
      → koliko si zaradio po kategorijama
   6. GET /api/dashboard/recent?limit=5
      → poslednjih 5 transakcija sa imenom kategorije
+
+========================================================================
+KOMANDE ZA POKRETANJE I ZAUSTAVLJANJE:
+========================================================================
+
+  POKRETANJE (redosled je bitan):
+  1. Otvori Docker Desktop              → sačekaj da se pokrene (zelena ikonica)
+  2. cd backend                          → uđi u backend folder
+  3. venv\Scripts\activate               → aktiviraj virtualno okruženje
+  4. docker compose up -d                → pokreni PostgreSQL + Redis kontejnere
+  5. pip install -r requirements.txt     → instaliraj pakete (samo ako ima promena)
+  6. python seed.py                      → ubaci test podatke (samo prvi put)
+  7. python -m uvicorn src.app:app --reload --port 8000  → pokreni server
+  8. Otvori http://localhost:8000/docs   → Swagger UI za testiranje
+
+  ZAUSTAVLJANJE (obrnut redosled):
+  1. Ctrl + C                            → zaustavi server (u terminalu gde radi)
+  2. docker compose down                 → zaustavi PostgreSQL + Redis kontejnere
+  3. deactivate                          → deaktiviraj venv (opciono)
+
+  ČIST RESTART (briše sve podatke iz baze):
+  1. Ctrl + C                            → zaustavi server
+  2. docker compose down -v              → zaustavi kontejnere i obriši bazu
+  3. docker compose up -d                → ponovo pokreni kontejnere
+  4. python seed.py                      → ponovo ubaci test podatke
+  5. python -m uvicorn src.app:app --reload --port 8000  → pokreni server
