@@ -15,6 +15,7 @@ from src.modules.budgets.schemas import (
     BudgetFilters,
 )
 from src.modules.budgets import service
+from src.utils.cache import invalidate_user_dashboard
 
 router = APIRouter(prefix="/api/budgets", tags=["budgets"])
 
@@ -25,7 +26,9 @@ async def create_budget(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await service.create_budget(db, current_user.id, data)
+    result = await service.create_budget(db, current_user.id, data)
+    await invalidate_user_dashboard(str(current_user.id))
+    return result
 
 
 @router.get("/", response_model=list[BudgetResponse])
@@ -65,7 +68,9 @@ async def update_budget(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await service.update_budget(db, current_user.id, budget_id, data)
+    result = await service.update_budget(db, current_user.id, budget_id, data)
+    await invalidate_user_dashboard(str(current_user.id))
+    return result
 
 
 @router.delete("/{budget_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -75,3 +80,4 @@ async def delete_budget(
     db: AsyncSession = Depends(get_db),
 ):
     await service.delete_budget(db, current_user.id, budget_id)
+    await invalidate_user_dashboard(str(current_user.id))

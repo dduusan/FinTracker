@@ -14,8 +14,11 @@ from src.modules.dashboard.schemas import (
     RecentTransaction,
 )
 from src.modules.dashboard import service
+from src.utils.cache import cache_get, cache_set
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
+
+DASHBOARD_CACHE_TTL = 300  # 5 minuta
 
 
 @router.get("/summary", response_model=SummaryResponse)
@@ -26,7 +29,14 @@ async def summary(
     db: AsyncSession = Depends(get_db),
 ):
     """Ukupni prihodi, rashodi i bilans za period."""
-    return await service.get_summary(db, current_user.id, date_from, date_to)
+    cache_key = f"dashboard:{current_user.id}:summary:{date_from}:{date_to}"
+    cached = await cache_get(cache_key)
+    if cached:
+        return cached
+
+    result = await service.get_summary(db, current_user.id, date_from, date_to)
+    await cache_set(cache_key, result.model_dump(mode="json"), DASHBOARD_CACHE_TTL)
+    return result
 
 
 @router.get("/monthly", response_model=MonthlyResponse)
@@ -36,7 +46,14 @@ async def monthly_trends(
     db: AsyncSession = Depends(get_db),
 ):
     """Mesecni trend prihoda i rashoda."""
-    return await service.get_monthly_trends(db, current_user.id, months)
+    cache_key = f"dashboard:{current_user.id}:monthly:{months}"
+    cached = await cache_get(cache_key)
+    if cached:
+        return cached
+
+    result = await service.get_monthly_trends(db, current_user.id, months)
+    await cache_set(cache_key, result.model_dump(mode="json"), DASHBOARD_CACHE_TTL)
+    return result
 
 
 @router.get("/by-category", response_model=ByCategoryResponse)
@@ -48,7 +65,14 @@ async def by_category(
     db: AsyncSession = Depends(get_db),
 ):
     """Potrosnja/prihod po kategorijama sa procentima."""
-    return await service.get_by_category(db, current_user.id, type, date_from, date_to)
+    cache_key = f"dashboard:{current_user.id}:by-category:{type}:{date_from}:{date_to}"
+    cached = await cache_get(cache_key)
+    if cached:
+        return cached
+
+    result = await service.get_by_category(db, current_user.id, type, date_from, date_to)
+    await cache_set(cache_key, result.model_dump(mode="json"), DASHBOARD_CACHE_TTL)
+    return result
 
 
 @router.get("/recent", response_model=list[RecentTransaction])
@@ -58,4 +82,12 @@ async def recent_transactions(
     db: AsyncSession = Depends(get_db),
 ):
     """Poslednjih N transakcija sa kategorijom."""
-    return await service.get_recent_transactions(db, current_user.id, limit)
+    cache_key = f"dashboard:{current_user.id}:recent:{limit}"
+    cached = await cache_get(cache_key)
+    if cached:
+        return cached
+
+    result = await service.get_recent_transactions(db, current_user.id, limit)
+    data = [r.model_dump(mode="json") for r in result]
+    await cache_set(cache_key, data, DASHBOARD_CACHE_TTL)
+    return result

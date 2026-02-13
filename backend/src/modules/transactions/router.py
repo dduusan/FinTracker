@@ -15,6 +15,7 @@ from src.modules.transactions.schemas import (
     TransactionType,
 )
 from src.modules.transactions import service
+from src.utils.cache import invalidate_user_dashboard
 
 router = APIRouter(prefix="/api/transactions", tags=["transactions"])
 
@@ -25,7 +26,9 @@ async def create_transaction(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await service.create_transaction(db, current_user.id, data)
+    result = await service.create_transaction(db, current_user.id, data)
+    await invalidate_user_dashboard(str(current_user.id))
+    return result
 
 
 @router.get("/")
@@ -63,7 +66,9 @@ async def update_transaction(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    return await service.update_transaction(db, current_user.id, transaction_id, data)
+    result = await service.update_transaction(db, current_user.id, transaction_id, data)
+    await invalidate_user_dashboard(str(current_user.id))
+    return result
 
 
 @router.delete("/{transaction_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -73,3 +78,4 @@ async def delete_transaction(
     db: AsyncSession = Depends(get_db),
 ):
     await service.delete_transaction(db, current_user.id, transaction_id)
+    await invalidate_user_dashboard(str(current_user.id))

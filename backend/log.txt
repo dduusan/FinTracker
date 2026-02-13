@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2+3+4+5)
+  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2+3+4+5+6)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -279,6 +279,51 @@ router.py (Dashboard API endpointi)
   → GET /api/dashboard/recent?limit=10
     → poslednjih N transakcija sa kategorijom
   → Svi endpointi zahtevaju JWT token
+
+========================================================================
+13. src/config/redis.py — REDIS KONEKCIJA (Faza 6)
+========================================================================
+
+  → init_redis(): kreira async Redis klijent pri pokretanju aplikacije
+  → close_redis(): zatvara konekciju pri gašenju
+  → get_redis(): vraća Redis klijent (koristi se u cache i rate limiter)
+  → Koristi redis[hiredis] paket za optimalne performanse
+
+========================================================================
+14. src/utils/cache.py — REDIS CACHING (Faza 6)
+========================================================================
+
+  → cache_get(key): čita keširanu vrednost (JSON deserijalizacija)
+  → cache_set(key, value, ttl): upisuje u keš (default 5 min TTL)
+  → cache_delete(pattern): briše ključeve po patternu (wildcard *)
+  → invalidate_user_dashboard(user_id): briše SVE dashboard keš ključeve
+    za korisnika — poziva se kad se menjaju transakcije/budžeti/kategorije
+  → Prefiks "fintracker:" za sve ključeve (izolacija od drugih aplikacija)
+
+========================================================================
+15. src/middleware/rate_limiter.py — RATE LIMITING (Faza 6)
+========================================================================
+
+  → RateLimitMiddleware: Starlette middleware koji ograničava zahteve
+  → Dva profila:
+    - auth rute: 10 zahteva/min (zaštita od brute-force napada)
+    - ostale rute: 60 zahteva/min
+  → Identifikuje klijenta po IP adresi
+  → Redis INCR + EXPIRE za atomično brojanje zahteva
+  → Response headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+  → HTTP 429 Too Many Requests sa Retry-After headerom
+  → Graceful degradation: ako Redis nije dostupan, propušta zahteve
+
+========================================================================
+16. CACHE INVALIDACIJA (Faza 6)
+========================================================================
+
+  → Kad korisnik kreira/menja/briše transakciju, budžet ili kategoriju,
+    automatski se briše dashboard keš za tog korisnika
+  → Ažurirani routeri: transactions, budgets, categories
+  → Dashboard endpointi: proveravaju keš pre upita u bazu
+    - Cache HIT → odmah vraća rezultat (bez DB upita)
+    - Cache MISS → upit u bazu, rezultat se keršira za 5 min
 
 ========================================================================
 POKRETANJE:

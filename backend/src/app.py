@@ -4,7 +4,9 @@ from fastapi import FastAPI
 
 from src.config.settings import settings
 from src.config.database import engine, Base
+from src.config.redis import init_redis, close_redis
 from src.middleware.error_handler import app_error_handler, generic_error_handler
+from src.middleware.rate_limiter import RateLimitMiddleware
 from src.modules.auth.router import router as auth_router
 from src.modules.transactions.router import router as transactions_router
 from src.modules.categories.router import router as categories_router
@@ -20,7 +22,11 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables ready")
+    await init_redis()
+    logger.info("Redis connected")
     yield
+    await close_redis()
+    logger.info("Redis disconnected")
     await engine.dispose()
     logger.info("FinTracker API shut down")
 
@@ -31,6 +37,8 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.add_middleware(RateLimitMiddleware)
 
 app.add_exception_handler(AppError, app_error_handler)
 app.add_exception_handler(Exception, generic_error_handler)
