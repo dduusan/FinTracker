@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER BACKEND — LOG IMPLEMENTACIJE (Faza 1+2+3+4+5+6+7+8)
+  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -506,3 +506,137 @@ KOMANDE ZA POKRETANJE I ZAUSTAVLJANJE:
   3. docker compose up -d                → ponovo pokreni kontejnere
   4. python seed.py                      → ponovo ubaci test podatke
   5. python -m uvicorn src.app:app --reload --port 8000  → pokreni server
+
+========================================================================
+========================================================================
+  FRONTEND — FAZA 1: Projekat setup + osnovni layout
+========================================================================
+========================================================================
+
+========================================================================
+21. frontend/package.json — Zavisnosti (Frontend Faza 1)
+========================================================================
+
+  → Kreiran sa: npm create vite@latest frontend -- --template react-ts
+  → Glavne zavisnosti:
+    - react, react-dom (v19)    → UI framework
+    - react-router-dom          → klijentski routing (SPA navigacija)
+    - axios                     → HTTP klijent za API pozive
+    - recharts                  → grafikoni (bar, line, pie chart)
+    - react-hook-form           → upravljanje formama
+    - react-hot-toast           → toast notifikacije (uspeh/greška)
+    - lucide-react              → SVG ikone
+    - date-fns                  → formatiranje datuma
+  → Dev zavisnosti:
+    - tailwindcss + @tailwindcss/vite → CSS framework
+    - typescript                → type safety
+
+========================================================================
+22. frontend/vite.config.ts — Vite konfiguracija (Frontend Faza 1)
+========================================================================
+
+  → Tailwind CSS plugin: automatski procesira Tailwind klase
+  → Dev server na portu 3000 (frontend)
+  → API proxy: /api/* zahtevi se prosleđuju na http://localhost:8000 (backend)
+    - Ovo znači da u kodu pišeš axios.get("/api/health")
+      a Vite to šalje na backend automatski
+    - Nema CORS problema u razvoju jer proxy radi kao posrednik
+
+========================================================================
+23. frontend/src/lib/utils.ts — Helper funkcije (Frontend Faza 1)
+========================================================================
+
+  → formatCurrency(amount) → formatira broj u RSD valuti (srpski format)
+  → formatDate(date)       → formatira datum na srpskom (dd. MMM yyyy.)
+  → formatMonth(date)      → formatira mesec na srpskom (januar 2026.)
+  → cn(...classes)          → spaja CSS klase (filtrira false/null/undefined)
+
+========================================================================
+24. frontend/src/components/ui/ — Reusable komponente (Frontend Faza 1)
+========================================================================
+
+  Button.tsx:
+  → Univerzalno dugme sa 4 varijante (primary, secondary, danger, ghost)
+  → 3 veličine (sm, md, lg)
+  → Loading spinner (prikazuje se dok se čeka odgovor sa servera)
+  → Automatski disabled dok je loading
+
+  Input.tsx:
+  → Input polje sa labelom i error porukom
+  → Koristi forwardRef (kompatibilno sa react-hook-form)
+  → Vizuelni feedback za grešku (crvena granica)
+
+  Select.tsx:
+  → Dropdown sa opcijama, labelom i error porukom
+  → Ista struktura kao Input (label, error, forwardRef)
+
+  Card.tsx:
+  → Kontejner sa belom pozadinom, zaobljenim uglovima i senkom
+  → Opcioni naslov (title prop)
+
+  Modal.tsx:
+  → Overlay (zatamnjeni pozadinski sloj, klik zatvara modal)
+  → Centriran beli prozor sa naslovom i X dugmetom
+  → Blokira scroll dok je otvoren
+
+========================================================================
+25. frontend/src/layouts/DashboardLayout.tsx — Layout (Frontend Faza 1)
+========================================================================
+
+  → Bočni meni (sidebar) sa 4 navigacione stavke:
+    - Pregled (/)         → LayoutDashboard ikona
+    - Transakcije (/transactions) → ArrowLeftRight ikona
+    - Kategorije (/categories)    → Tag ikona
+    - Budžeti (/budgets)          → Wallet ikona
+  → "Odjavi se" dugme na dnu sidebar-a
+  → Header sa hamburger menijem (na mobilnom)
+  → Responsivan: sidebar se sakriva na ekranima < 1024px
+  → NavLink: aktivna stavka je obojena indigo bojom
+  → <Outlet /> renderuje trenutnu stranicu
+
+========================================================================
+26. frontend/src/pages/ — Stranice (Frontend Faza 1)
+========================================================================
+
+  → DashboardPage.tsx     → placeholder za Fazu 3
+  → TransactionsPage.tsx  → placeholder za Fazu 4
+  → CategoriesPage.tsx    → placeholder za Fazu 5
+  → BudgetsPage.tsx       → placeholder za Fazu 6
+  → LoginPage.tsx         → placeholder za Fazu 2
+  → RegisterPage.tsx      → placeholder za Fazu 2
+
+========================================================================
+27. frontend/src/App.tsx — Routing (Frontend Faza 1)
+========================================================================
+
+  → BrowserRouter: klijentski routing (URL se menja bez reload-a)
+  → Toaster: globalne toast notifikacije (gore desno)
+  → Auth rute (/login, /register): bez layout-a (pun ekran)
+  → Dashboard rute: omotane u DashboardLayout (sidebar + header)
+    - /              → DashboardPage
+    - /transactions  → TransactionsPage
+    - /categories    → CategoriesPage
+    - /budgets       → BudgetsPage
+
+========================================================================
+28. backend/src/app.py — CORS middleware (Frontend Faza 1)
+========================================================================
+
+  → Dodat CORSMiddleware koji dozvoljava zahteve sa http://localhost:3000
+  → allow_credentials=True: dozvoljava slanje kolačića
+  → allow_methods=["*"]: svi HTTP metodi (GET, POST, PUT, DELETE)
+  → allow_headers=["*"]: svi header-i (uključujući Authorization)
+  → Ovo je potrebno jer frontend (port 3000) i backend (port 8000)
+    su na različitim portovima = "cross-origin" zahtevi
+
+========================================================================
+POKRETANJE FRONTEND-a:
+========================================================================
+
+  1. cd frontend                → uđi u frontend folder
+  2. npm install                → instaliraj zavisnosti (samo prvi put)
+  3. npm run dev                → pokreni dev server
+  4. Otvori http://localhost:3000 → aplikacija u browseru
+
+  NAPOMENA: Backend mora da radi da bi API pozivi radili!
+  → Pokreni backend (port 8000) pre frontend-a (port 3000)
