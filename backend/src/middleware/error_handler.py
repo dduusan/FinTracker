@@ -11,5 +11,7 @@ async def app_error_handler(request: Request, exc: AppError) -> JSONResponse:
 
 
 async def generic_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    import traceback
     logger.error(f"500 | {request.method} {request.url.path} | {str(exc)}")
+    logger.error(traceback.format_exc())
     return JSONResponse(status_code=500, content={"error": "Internal server error"})

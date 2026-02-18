@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1)
+  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-2)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -630,13 +630,146 @@ KOMANDE ZA POKRETANJE I ZAUSTAVLJANJE:
     su na različitim portovima = "cross-origin" zahtevi
 
 ========================================================================
-POKRETANJE FRONTEND-a:
+========================================================================
+  FRONTEND — FAZA 2: Autentifikacija (Login/Register)
+========================================================================
 ========================================================================
 
-  1. cd frontend                → uđi u frontend folder
-  2. npm install                → instaliraj zavisnosti (samo prvi put)
-  3. npm run dev                → pokreni dev server
-  4. Otvori http://localhost:3000 → aplikacija u browseru
+========================================================================
+29. frontend/src/api/axios.ts — Axios instanca (Frontend Faza 2)
+========================================================================
 
-  NAPOMENA: Backend mora da radi da bi API pozivi radili!
-  → Pokreni backend (port 8000) pre frontend-a (port 3000)
+  → Kreira axios instancu sa baseURL: "/api"
+  → Request interceptor: automatski dodaje Authorization: Bearer <token>
+    na svaki zahtev (čita token iz localStorage)
+  → Response interceptor: ako server vrati 401 (Unauthorized):
+    1. Pokušava da osvezi token preko POST /api/auth/refresh
+    2. Ako uspe → sačuva nove tokene i ponovi originalni zahtev
+    3. Ako ne uspe → obriše tokene i redirectuje na /login
+  → Ne pokušava refresh za /auth/login i /auth/refresh rute (izbegava loop)
+  → _retry flag sprečava beskonačno ponavljanje
+
+========================================================================
+30. frontend/src/api/auth.ts — Auth API pozivi (Frontend Faza 2)
+========================================================================
+
+  → TypeScript interfejsi: User, TokenResponse, LoginRequest, RegisterRequest
+  → login(data)    → POST /api/auth/login → vraća access + refresh token
+  → register(data) → POST /api/auth/register → vraća kreiranog korisnika
+  → getMe()        → GET /api/auth/me → vraća podatke o ulogovanom korisniku
+
+========================================================================
+31. frontend/src/context/AuthContext.tsx — Auth state (Frontend Faza 2)
+========================================================================
+
+  → React Context koji drži globalni auth state (user, loading)
+  → AuthProvider omotava celu aplikaciju
+  → useAuth() hook — pristup auth stanju iz bilo koje komponente
+  → Pri učitavanju stranice: proverava da li postoji token u localStorage,
+    ako postoji → poziva getMe() da dohvati korisnika
+  → login() funkcija: poziva API, čuva tokene u localStorage, dohvata usera
+  → register() funkcija: poziva API (ne loguje automatski)
+  → logout() funkcija: briše tokene iz localStorage, resetuje user na null
+
+========================================================================
+32. frontend/src/components/ProtectedRoute.tsx — Zaštita ruta (Frontend Faza 2)
+========================================================================
+
+  → Wrapper komponenta koja štiti rute od neautorizovanih korisnika
+  → Dok se proverava auth status → prikazuje loading spinner
+  → Ako korisnik nije ulogovan → redirectuje na /login
+  → Ako je ulogovan → renderuje children (stranica koju korisnik traži)
+
+========================================================================
+33. frontend/src/pages/LoginPage.tsx — Login stranica (Frontend Faza 2)
+========================================================================
+
+  → Forma sa email i lozinka poljima (react-hook-form)
+  → Validacija: email obavezan + format, lozinka min 6 karaktera
+  → Na uspeh: toast "Uspešna prijava!" + redirect na /
+  → Na grešku: toast sa error porukom sa servera
+  → Loading state: dugme prikazuje spinner dok čeka odgovor
+  → Ako je korisnik već ulogovan → automatski redirect na /
+  → Link ka /register stranici
+
+========================================================================
+34. frontend/src/pages/RegisterPage.tsx — Registracija (Frontend Faza 2)
+========================================================================
+
+  → Forma: ime (opciono), email, lozinka, potvrda lozinke
+  → Validacija: email format, lozinka min 6, potvrda mora da se poklapa
+  → Na uspeh: toast + redirect na /login (korisnik se ručno prijavljuje)
+  → Na grešku: toast sa error porukom (npr. "Email već postoji")
+  → Ako je korisnik već ulogovan → automatski redirect na /
+
+========================================================================
+35. frontend/src/App.tsx — Ažuriran routing (Frontend Faza 2)
+========================================================================
+
+  → AuthProvider omotava sve rute (globalni auth state)
+  → Javne rute: /login, /register (bez zaštite)
+  → Zaštićene rute: /, /transactions, /categories, /budgets
+    → Omotane u ProtectedRoute → redirect na /login ako nema tokena
+  → DashboardLayout se renderuje samo za ulogovane korisnike
+
+========================================================================
+36. frontend/src/layouts/DashboardLayout.tsx — Ažuriran (Frontend Faza 2)
+========================================================================
+
+  → Header prikazuje ime ili email ulogovanog korisnika
+  → "Odjavi se" dugme poziva logout() i redirectuje na /login
+
+========================================================================
+POKRETANJE CELE APLIKACIJE (Backend + Frontend):
+========================================================================
+
+  Sve komande se pokreću iz ROOT foldera (FinTrackerApp/).
+  Definisane su u package.json na root nivou.
+
+  KORAK 1 — Pokreni Docker Desktop:
+    → Otvori Docker Desktop i sačekaj da se pokrene (zelena ikonica)
+
+  KORAK 2 — Pokreni Docker kontejnere (PostgreSQL + Redis):
+    npm run docker
+
+  KORAK 3 — Pokreni Backend (Terminal 1):
+    npm run backend
+    → Backend radi na http://localhost:8000
+    → Swagger UI: http://localhost:8000/docs
+
+  KORAK 4 — Pokreni Frontend (Terminal 2 — novi terminal!):
+    npm run frontend
+    → Frontend radi na http://localhost:3000
+
+  OSTALE KOMANDE:
+    npm run seed                  → ubaci test podatke u bazu (samo prvi put)
+    npm run docker:down           → zaustavi PostgreSQL + Redis kontejnere
+
+  NAPOMENA: Trebaš DVA terminala otvorena istovremeno!
+    - Terminal 1: npm run backend  (port 8000)
+    - Terminal 2: npm run frontend (port 3000)
+
+========================================================================
+ZAUSTAVLJANJE CELE APLIKACIJE:
+========================================================================
+
+  Terminal 2 (frontend):
+    → Ctrl + C                    → zaustavi frontend dev server
+
+  Terminal 1 (backend):
+    → Ctrl + C                    → zaustavi backend server
+    → npm run docker:down         → zaustavi PostgreSQL + Redis
+
+========================================================================
+ČIST RESTART (briše sve podatke iz baze):
+========================================================================
+
+  Terminal 1 (backend):
+    → Ctrl + C
+    → docker compose -f backend/docker-compose.yml down -v
+    → npm run docker
+    → npm run seed
+    → npm run backend
+
+  Terminal 2 (frontend):
+    → npm run frontend

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ArrowLeftRight,
@@ -9,6 +9,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Pregled" },
@@ -19,6 +20,13 @@ const navItems = [
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate("/login");
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -68,7 +76,10 @@ export default function DashboardLayout() {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-          <button className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
+          >
             <LogOut size={20} />
             Odjavi se
           </button>
@@ -86,7 +97,9 @@ export default function DashboardLayout() {
             <Menu size={20} />
           </button>
           <div className="ml-auto flex items-center gap-4">
-            <span className="text-sm text-gray-600">Dobrodošli</span>
+            <span className="text-sm text-gray-600">
+              {user?.name || user?.email}
+            </span>
           </div>
         </header>
 

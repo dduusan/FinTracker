@@ -1,0 +1,11 @@
+{
+  "name": "fintracker",
+  "private": true,
+  "scripts": {
+    "docker": "docker compose -f backend/docker-compose.yml up -d postgres redis",
+    "docker:down": "docker compose -f backend/docker-compose.yml down",
+    "backend": "cd backend && venv\\Scripts\\python.exe -m uvicorn src.app:app --reload --port 8000",
+    "frontend": "cd frontend && npx vite",
+    "seed": "cd backend && venv\\Scripts\\python.exe seed.py"
+  }
+}
