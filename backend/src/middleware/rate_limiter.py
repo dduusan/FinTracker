@@ -7,8 +7,8 @@ from src.utils.logger import logger
 
 # Limiti po tipu rute
 RATE_LIMITS = {
-    "auth": {"requests": 10, "window": 60},      # 10 req/min za auth
-    "default": {"requests": 60, "window": 60},    # 60 req/min za ostalo
+    "auth": {"requests": 30, "window": 60},       # 30 req/min za auth (development)
+    "default": {"requests": 300, "window": 60},   # 300 req/min za ostalo (development)
 }
 
 

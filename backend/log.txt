@@ -889,6 +889,57 @@ KOMANDE ZA POKRETANJE I ZAUSTAVLJANJE:
   → Korisno za testiranje dashboard grafikona i filtera
 
 ========================================================================
+========================================================================
+  FRONTEND — FAZA 5: Kategorije (CRUD)
+========================================================================
+========================================================================
+
+========================================================================
+52. frontend/src/components/categories/CategoryForm.tsx (Frontend Faza 5)
+========================================================================
+
+  → Modal forma za kreiranje i izmenu kategorije
+  → Tip: radio dugmad (Rashod/Prihod) sa bojama (crvena/zelena)
+  → Naziv: tekst input sa obaveznom validacijom
+  → Ikona: dve opcije:
+    - Brzi izbor: 20 unapred ponudenih emoji ikonice (klik selektuje)
+    - Slobodan unos: tekst polje za bilo koji emoji ili tekst
+  → Selektovana ikona ima indigo border (vizuelni feedback)
+  → useEffect resetuje formu svaki put kad se modal otvori
+  → Pri izmeni: popunjava se sa postojecim podacima kategorije
+
+========================================================================
+53. frontend/src/components/categories/CategoryCard.tsx (Frontend Faza 5)
+========================================================================
+
+  → Kartica koja prikazuje jednu kategoriju
+  → Levo: emoji ikona u obojenoj pozadini (zelena za prihod, crvena za rashod)
+  → Sredina: naziv kategorije + tip badge (Prihod/Rashod)
+  → Desno: dugme za izmenu (olovka, hover indigo) i brisanje (kanta, hover crvena)
+  → Hover efekat na celoj kartici (border postaje tamniji)
+  → Ako kategorija nema ikonu prikazuje se podrazumevano "📂"
+
+========================================================================
+54. frontend/src/pages/CategoriesPage.tsx — Azuriran (Frontend Faza 5)
+========================================================================
+
+  → Kompletna CRUD stranica za kategorije
+  → Podeljena u 2 sekcije (grid, 2 kolone na vecim ekranima):
+    - Prihodi (zeleni naslov + broj kategorija)
+    - Rashodi (crveni naslov + broj kategorija)
+  → "Nova kategorija" dugme gore desno
+  → Empty state za svaku sekciju ako nema kategorija
+  → State: categories, loading, formOpen, editCat, deleteCat, saving, deleting
+  → handleCreate: kreira kategoriju, zatvara modal, osvezava listu
+  → handleEdit: azurira kategoriju, zatvara modal, osvezava listu
+  → handleDelete: brise kategoriju uz toast notifikaciju
+    - Napomena: kategorija se NE MOZE obrisati ako ima transakcije
+      (backend baca gresku zbog foreign key constrainta)
+      poruka upozorenja je prikazana u modal-u za brisanje
+  → Modal za brisanje (inline, ne koristi DeleteConfirmModal komponentu)
+    sadrzi naziv kategorije i upozorenje o transakcijama
+
+========================================================================
 POKRETANJE CELE APLIKACIJE (Backend + Frontend):
 ========================================================================
 
