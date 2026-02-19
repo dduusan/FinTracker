@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-3)
+  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-4)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -800,6 +800,93 @@ KOMANDE ZA POKRETANJE I ZAUSTAVLJANJE:
   → Error poruka ako API poziv ne uspe
   → Layout: summary kartice gore, 2 grafikona u sredini, transakcije dole
   → Grid: na manjim ekranima 1 kolona, na xl 2 kolone za grafikone
+
+========================================================================
+========================================================================
+  FRONTEND — FAZA 4: Transakcije (CRUD)
+========================================================================
+========================================================================
+
+========================================================================
+44. frontend/src/api/transactions.ts — Transakcije API (Frontend Faza 4)
+========================================================================
+
+  → TypeScript interfejsi: Transaction, TransactionCreate, TransactionUpdate, TransactionFilters
+  → getTransactions(filters) → GET /api/transactions/ (sa filterima)
+    - Filtrira prazne vrednosti pre slanja na server
+  → createTransaction(data) → POST /api/transactions/
+  → updateTransaction(id, data) → PUT /api/transactions/{id}
+  → deleteTransaction(id) → DELETE /api/transactions/{id}
+
+========================================================================
+45. frontend/src/api/categories.ts — Kategorije API (Frontend Faza 4)
+========================================================================
+
+  → TypeScript interfejsi: Category, CategoryCreate, CategoryUpdate
+  → getCategories(type?) → GET /api/categories/ (opcioni filter po tipu)
+  → createCategory, updateCategory, deleteCategory
+  → Ovaj fajl se koristi u Fazi 4 (transakcije), 5 (kategorije) i 6 (budzeti)
+
+========================================================================
+46. frontend/src/components/transactions/TransactionFilters.tsx (Faza 4)
+========================================================================
+
+  → Filter traka sa 4 kontrole: tip, kategorija, datum od, datum do
+  → "Resetuj" dugme vraca filtere na podrazumevane vrednosti
+  → Svaka promena filtera automatski osvezava listu transakcija
+  → Dropdown za kategorije prikazuje emoji ikonu i naziv
+
+========================================================================
+47. frontend/src/components/transactions/TransactionForm.tsx (Faza 4)
+========================================================================
+
+  → Modal forma za kreiranje i izmenu transakcije
+  → Tip: radio dugmad (Rashod/Prihod) sa bojama (crvena/zelena)
+  → Kategorija dropdown: filtrira se po izabranom tipu
+    (ako izaberes "Prihod", vidis samo income kategorije)
+  → Polja: iznos, kategorija, datum, opis (opciono)
+  → Pri otvaranju za izmenu: forma se popunjava postojecim podacima
+  → useEffect resetuje formu svaki put kad se modal otvori
+
+========================================================================
+48. frontend/src/components/transactions/DeleteConfirmModal.tsx (Faza 4)
+========================================================================
+
+  → Jednostavan modal za potvrdu brisanja
+  → Dugmad: "Otkazi" (siva) i "Obrisi" (crvena)
+  → Loading state na "Obrisi" dugmetu dok se ceka odgovor
+
+========================================================================
+49. frontend/src/components/transactions/TransactionTable.tsx (Faza 4)
+========================================================================
+
+  → Tabela sa kolonama: Datum, Kategorija, Opis, Tip, Iznos, Akcije
+  → Opis i kategorija su skriveni na malim ekranima (responsive)
+  → Tip prikazan kao badge (zeleni za prihod, crveni za rashod)
+  → Iznos: zeleni sa "+" za prihode, crveni sa "-" za rashode
+  → Dugmad za izmenu (olovka) i brisanje (kanta) na svakom redu
+  → Empty state ako nema transakcija
+
+========================================================================
+50. frontend/src/pages/TransactionsPage.tsx — Azuriran (Frontend Faza 4)
+========================================================================
+
+  → Kompletna CRUD stranica za transakcije
+  → State: transactions, categories, filters, loading, formOpen, editTx, deleteTx
+  → useCallback za loadTransactions (poziva se kad se filters promene)
+  → handleCreate: kreira transakciju, zatvara modal, osvezava listu
+  → handleEdit: azurira transakciju, zatvara modal, osvezava listu
+  → handleDelete: brise transakciju, zatvara modal, osvezava listu
+  → Toast notifikacije za uspeh i greske
+  → "Nova transakcija" dugme gore desno
+
+========================================================================
+51. backend/seed.py — Azuriran (Frontend Faza 4)
+========================================================================
+
+  → Dodate 16 test transakcija za poslednja 3 meseca
+  → Mesecna plata, freelance prihodi, stanarina, hrana, transport, zabava
+  → Korisno za testiranje dashboard grafikona i filtera
 
 ========================================================================
 POKRETANJE CELE APLIKACIJE (Backend + Frontend):
