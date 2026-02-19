@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-2)
+  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-3)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -718,6 +718,88 @@ KOMANDE ZA POKRETANJE I ZAUSTAVLJANJE:
 
   → Header prikazuje ime ili email ulogovanog korisnika
   → "Odjavi se" dugme poziva logout() i redirectuje na /login
+
+========================================================================
+========================================================================
+  FRONTEND — FAZA 3: Dashboard (grafikoni i statistike)
+========================================================================
+========================================================================
+
+========================================================================
+37. frontend/src/api/dashboard.ts — Dashboard API (Frontend Faza 3)
+========================================================================
+
+  → TypeScript interfejsi za sve dashboard odgovore:
+    - SummaryResponse: ukupni prihodi, rashodi, bilans, broj transakcija
+    - MonthlyItem / MonthlyResponse: mesečni trend podaci
+    - CategorySpending / ByCategoryResponse: rashodi po kategorijama
+    - RecentTransaction: poslednje transakcije sa imenom kategorije
+  → getSummary()     → GET /api/dashboard/summary
+  → getMonthly()     → GET /api/dashboard/monthly?months=6
+  → getByCategory()  → GET /api/dashboard/by-category?type=expense
+  → getRecent()      → GET /api/dashboard/recent?limit=8
+
+========================================================================
+38. frontend/src/hooks/useDashboard.ts — Custom hook (Frontend Faza 3)
+========================================================================
+
+  → Jedan hook koji poziva sva 4 dashboard endpoint-a paralelno (Promise.all)
+  → Drži state: summary, monthly, byCategory, grandTotal, recent, loading, error
+  → reload() funkcija za osvežavanje podataka
+  → Koristi useEffect da automatski učita podatke pri montiranju komponente
+
+========================================================================
+39. frontend/src/components/dashboard/SummaryCards.tsx (Frontend Faza 3)
+========================================================================
+
+  → 4 kartice u grid-u (responsive: 1 → 2 → 4 kolone)
+  → Ukupni prihodi: zelena ikona TrendingUp
+  → Ukupni rashodi: crvena ikona TrendingDown
+  → Bilans: indigo/crvena boja zavisno od pozitivnog/negativnog bilansa
+  → Broj transakcija: siva ikona ArrowLeftRight
+  → Koristi formatCurrency() za RSD format
+
+========================================================================
+40. frontend/src/components/dashboard/MonthlyChart.tsx (Frontend Faza 3)
+========================================================================
+
+  → Grupovani bar chart sa Recharts bibliotekom
+  → X osa: skraćeni nazivi meseci na srpskom (Jan, Feb, Mar...)
+  → Y osa: vrednosti u hiljadama (10k, 20k...)
+  → 2 bара: Prihodi (indigo) i Rashodi (crvena)
+  → Tooltip prikazuje tačne iznose u RSD
+  → ResponsiveContainer: automatski se prilagođava širini ekrana
+
+========================================================================
+41. frontend/src/components/dashboard/CategoryPieChart.tsx (Frontend Faza 3)
+========================================================================
+
+  → Donut chart (pie sa innerRadius) sa Recharts bibliotekom
+  → Toggle dugme Rashodi/Prihodi (UI spreman, logika u Fazi 6)
+  → 8 različitih boja za kategorije (rotira se ako ih ima više)
+  → Tooltip sa RSD iznosom
+  → Prikazuje ukupan iznos ispod grafikona
+  → Empty state ako nema podataka
+
+========================================================================
+42. frontend/src/components/dashboard/RecentTransactions.tsx (Frontend Faza 3)
+========================================================================
+
+  → Lista poslednjih 8 transakcija
+  → Svaka stavka: ikona (zelena strelica gore za prihod, crvena dole za rashod)
+  → Prikazuje: ime kategorije sa emoji ikonom, opis/datum, iznos
+  → Iznos: zeleni sa "+" za prihode, crveni sa "-" za rashode
+  → Empty state ako nema transakcija
+
+========================================================================
+43. frontend/src/pages/DashboardPage.tsx — Ažuriran (Frontend Faza 3)
+========================================================================
+
+  → Koristi useDashboard hook za dohvatanje svih podataka
+  → Loading spinner dok se podaci učitavaju
+  → Error poruka ako API poziv ne uspe
+  → Layout: summary kartice gore, 2 grafikona u sredini, transakcije dole
+  → Grid: na manjim ekranima 1 kolona, na xl 2 kolone za grafikone
 
 ========================================================================
 POKRETANJE CELE APLIKACIJE (Backend + Frontend):
