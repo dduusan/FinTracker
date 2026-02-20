@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-4)
+  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-6)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -938,6 +938,67 @@ KOMANDE ZA POKRETANJE I ZAUSTAVLJANJE:
       poruka upozorenja je prikazana u modal-u za brisanje
   → Modal za brisanje (inline, ne koristi DeleteConfirmModal komponentu)
     sadrzi naziv kategorije i upozorenje o transakcijama
+
+========================================================================
+========================================================================
+  FRONTEND — FAZA 6: Budžeti (CRUD + progress barovi)
+========================================================================
+========================================================================
+
+========================================================================
+55. frontend/src/api/budgets.ts — Budžeti API (Frontend Faza 6)
+========================================================================
+
+  → TypeScript interfejsi: Budget, BudgetCreate, BudgetUpdate, BudgetSummaryItem
+  → getBudgets(month?) → GET /api/budgets/ (opcioni filter po mesecu)
+  → getBudgetSummary(month) → GET /api/budgets/summary?month=...
+    - Ovo je NAJVAŽNIJI endpoint — vraća budgeted, spent, remaining za svaku kat.
+  → createBudget(data) → POST /api/budgets/
+  → updateBudget(id, data) → PUT /api/budgets/{id}
+  → deleteBudget(id) → DELETE /api/budgets/{id}
+
+========================================================================
+56. frontend/src/components/budgets/BudgetForm.tsx (Frontend Faza 6)
+========================================================================
+
+  → Modal forma za kreiranje i izmenu budžeta
+  → Dropdown za kategoriju: prikazuje samo EXPENSE kategorije
+    - Pri kreiranju: filtrira kategorije koje vec imaju budzet za taj mesec
+    - Pri izmeni: dropdown je disabled (ne moze se promeniti kategorija)
+  → Input za planirani iznos (RSD, tip number, min 1)
+  → Automatski koristi trenutni mesec (prosledjen kao prop)
+  → useEffect resetuje formu pri otvaranju modala
+
+========================================================================
+57. frontend/src/components/budgets/BudgetCard.tsx (Frontend Faza 6)
+========================================================================
+
+  → Kartica sa progress barom za jedan budzet
+  → Prikazuje: naziv kategorije, potroseno / od ukupnog, procenat
+  → Progress bar sa 3 boje:
+    - Zelena (< 70%) → sve u redu
+    - Žuta (70-89%) → blizu limita
+    - Crvena (>= 90%) → kritično
+  → Ako je potrošnja VEĆA od budžeta → prikazuje "Prekoračenje: XXX RSD"
+  → Ako je manja → prikazuje "Preostalo: XXX RSD" (zelena boja)
+  → Dugmad za izmenu (olovka) i brisanje (kanta)
+
+========================================================================
+58. frontend/src/pages/BudgetsPage.tsx — Ažuriran (Frontend Faza 6)
+========================================================================
+
+  → Kompletna CRUD stranica za budžete sa mesečnom navigacijom
+  → Navigacija meseca: strelice levo/desno menjaju mesec
+    - Format: "Februar 2026" (srpski nazivi meseci)
+  → Koristi /api/budgets/summary za prikaz (budgeted vs spent vs remaining)
+  → Ukupna statistika na vrhu:
+    - Ukupan progress bar (indigo/žuta/crvena boja)
+    - Ukupno potrošeno od ukupno budžetirano
+    - Preostalo ili prekoračenje
+  → Grid sa BudgetCard karticama (1 / 2 / 3 kolone zavisno od ekrana)
+  → Empty state: "Nema budžeta za ovaj mesec" sa uputstvom
+  → CRUD: kreiranje, izmena (samo iznos), brisanje sa potvrdom
+  → Promise.all za paralelno ucitavanje summary + categories
 
 ========================================================================
 POKRETANJE CELE APLIKACIJE (Backend + Frontend):

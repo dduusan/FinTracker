@@ -34,7 +34,7 @@ export default function DashboardPage() {
       {/* Grafikoni */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <MonthlyChart data={monthly} />
-        <CategoryPieChart data={byCategory} grandTotal={grandTotal} />
+        <CategoryPieChart initialData={byCategory} initialTotal={grandTotal} />
       </div>
 
       {/* Poslednje transakcije */}

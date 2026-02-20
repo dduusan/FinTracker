@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   PieChart,
   Pie,
@@ -8,6 +8,7 @@ import {
   Legend,
 } from "recharts";
 import type { CategorySpending } from "../../api/dashboard";
+import { getByCategory } from "../../api/dashboard";
 import { formatCurrency } from "../../lib/utils";
 
 const COLORS = [
@@ -16,12 +17,31 @@ const COLORS = [
 ];
 
 interface Props {
-  data: CategorySpending[];
-  grandTotal: number;
+  initialData: CategorySpending[];
+  initialTotal: number;
 }
 
-export default function CategoryPieChart({ data, grandTotal }: Props) {
+export default function CategoryPieChart({ initialData, initialTotal }: Props) {
   const [activeType, setActiveType] = useState<"expense" | "income">("expense");
+  const [data, setData] = useState<CategorySpending[]>(initialData);
+  const [grandTotal, setGrandTotal] = useState(initialTotal);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeType === "expense") {
+      setData(initialData);
+      setGrandTotal(initialTotal);
+      return;
+    }
+
+    setLoading(true);
+    getByCategory({ type: "income" })
+      .then((res) => {
+        setData(res.data);
+        setGrandTotal(res.grand_total);
+      })
+      .finally(() => setLoading(false));
+  }, [activeType, initialData, initialTotal]);
 
   const chartData = data.map((item, i) => ({
     name: `${item.icon ?? ""} ${item.category_name}`.trim(),
@@ -58,7 +78,11 @@ export default function CategoryPieChart({ data, grandTotal }: Props) {
         </div>
       </div>
 
-      {chartData.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center h-48">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" />
+        </div>
+      ) : chartData.length === 0 ? (
         <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
           Nema podataka za prikaz
         </div>
