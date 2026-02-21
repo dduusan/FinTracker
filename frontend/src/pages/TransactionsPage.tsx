@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus } from "lucide-react";
 import toast from "react-hot-toast";
+import { usePageTitle } from "../hooks/usePageTitle";
 import type { Transaction, TransactionFilters } from "../api/transactions";
 import {
   getTransactions,
@@ -26,6 +27,7 @@ const DEFAULT_FILTERS: TransactionFilters = {
 };
 
 export default function TransactionsPage() {
+  usePageTitle("Transakcije");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [filters, setFilters] = useState<TransactionFilters>(DEFAULT_FILTERS);

@@ -1,19 +1,18 @@
 import { useDashboard } from "../hooks/useDashboard";
+import { usePageTitle } from "../hooks/usePageTitle";
 import SummaryCards from "../components/dashboard/SummaryCards";
 import MonthlyChart from "../components/dashboard/MonthlyChart";
 import CategoryPieChart from "../components/dashboard/CategoryPieChart";
 import RecentTransactions from "../components/dashboard/RecentTransactions";
+import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 
 export default function DashboardPage() {
+  usePageTitle("Pregled");
   const { summary, monthly, byCategory, grandTotal, recent, loading, error } =
     useDashboard();
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error) {

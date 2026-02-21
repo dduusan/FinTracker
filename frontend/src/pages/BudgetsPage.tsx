@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
+import { usePageTitle } from "../hooks/usePageTitle";
 import type { BudgetCreate, BudgetSummaryItem } from "../api/budgets";
 import {
   getBudgetSummary,
@@ -32,6 +33,7 @@ function formatMonthLabel(dateStr: string): string {
 }
 
 export default function BudgetsPage() {
+  usePageTitle("Budžeti");
   const [currentMonth, setCurrentMonth] = useState(() => getMonthString(new Date()));
   const [summary, setSummary] = useState<BudgetSummaryItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);

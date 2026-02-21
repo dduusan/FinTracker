@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import toast from "react-hot-toast";
+import { usePageTitle } from "../hooks/usePageTitle";
 import type { Category, CategoryCreate } from "../api/categories";
 import {
   getCategories,
@@ -14,6 +15,7 @@ import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
 
 export default function CategoriesPage() {
+  usePageTitle("Kategorije");
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);

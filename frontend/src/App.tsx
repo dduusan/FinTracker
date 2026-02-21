@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage";
 import TransactionsPage from "./pages/TransactionsPage";
@@ -15,6 +16,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Toaster position="top-right" />
+        <ErrorBoundary>
         <Routes>
           {/* Auth routes — javne */}
           <Route path="/login" element={<LoginPage />} />
@@ -34,6 +36,7 @@ export default function App() {
             <Route path="/budgets" element={<BudgetsPage />} />
           </Route>
         </Routes>
+        </ErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
   );

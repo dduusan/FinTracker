@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-6)
+  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-7)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -999,6 +999,72 @@ KOMANDE ZA POKRETANJE I ZAUSTAVLJANJE:
   → Empty state: "Nema budžeta za ovaj mesec" sa uputstvom
   → CRUD: kreiranje, izmena (samo iznos), brisanje sa potvrdom
   → Promise.all za paralelno ucitavanje summary + categories
+
+========================================================================
+========================================================================
+  FRONTEND — FAZA 7: Polish + UX poboljšanja
+========================================================================
+========================================================================
+
+========================================================================
+59. frontend/src/components/ui/Skeleton.tsx (Frontend Faza 7)
+========================================================================
+
+  → Reusable skeleton komponenta za loading state
+  → Koristi animate-pulse Tailwind animaciju
+  → Prima className za prilagodenu visinu/sirinu
+
+========================================================================
+60. frontend/src/components/dashboard/DashboardSkeleton.tsx (Faza 7)
+========================================================================
+
+  → Skeleton placeholder za celu dashboard stranicu
+  → Imitira raspored: 4 summary kartice, 2 grafikona, lista transakcija
+  → Prikazuje se umesto spinnera dok se podaci ucitavaju
+  → Mnogo bolji UX jer korisnik vidi obris stranice pre ucitavanja
+
+========================================================================
+61. frontend/src/components/ErrorBoundary.tsx (Frontend Faza 7)
+========================================================================
+
+  → React Error Boundary (class komponenta — jedini nacin u React-u)
+  → Hvata JavaScript greske u bilo kojoj child komponenti
+  → Umesto belog ekrana prikazuje:
+    - Ikona upozorenja
+    - Poruka: "Nešto je pošlo naopako"
+    - Dugme "Osveži stranicu" (reload)
+  → Loguje gresku u konzolu (console.error)
+  → Omotava sve rute u App.tsx
+
+========================================================================
+62. frontend/src/hooks/usePageTitle.ts (Frontend Faza 7)
+========================================================================
+
+  → Custom hook koji menja document.title (tab naslov u browseru)
+  → Format: "Pregled — FinTracker", "Transakcije — FinTracker", itd.
+  → Dodat na sve stranice: Dashboard, Transakcije, Kategorije, Budzeti
+
+========================================================================
+63. frontend/src/components/transactions/TransactionTable.tsx — Azuriran
+========================================================================
+
+  → Dodat responsive prikaz:
+    - Desktop (md+): tabela sa svim kolonama
+    - Mobilni (< md): kartice umesto tabele
+  → Mobilna kartica prikazuje:
+    - Kategorija + iznos u prvom redu
+    - Datum, opis, i akcije u drugom redu
+  → Dugmad za edit/delete su dostupna i na mobilnom
+
+========================================================================
+64. frontend/src/components/dashboard/CategoryPieChart.tsx — Azuriran
+========================================================================
+
+  → Toggle Rashodi/Prihodi sad RADI:
+    - Rashodi: koriste podatke iz inicijalnog ucitavanja (bez novog API poziva)
+    - Prihodi: poziva GET /api/dashboard/by-category?type=income
+  → Spinner dok se podaci ucitavaju pri prebacivanju
+  → Ukupan iznos se menja zavisno od tipa
 
 ========================================================================
 POKRETANJE CELE APLIKACIJE (Backend + Frontend):
