@@ -2,9 +2,10 @@ import {
   createContext,
   useContext,
   useState,
+  useRef,
   useEffect,
-  ReactNode,
 } from "react";
+import type { ReactNode } from "react";
 import type { User, LoginRequest, RegisterRequest } from "../api/auth";
 import { login as apiLogin, register as apiRegister, getMe } from "../api/auth";
 
@@ -21,9 +22,12 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const initialized = useRef(false);
 
-  // On load: check if token exists and fetch user
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
     const token = localStorage.getItem("access_token");
     if (token) {
       getMe()
@@ -34,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
         .finally(() => setLoading(false));
     } else {
-      setLoading(false);
+      queueMicrotask(() => setLoading(false));
     }
   }, []);
 
@@ -63,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

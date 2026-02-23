@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { usePageTitle } from "../hooks/usePageTitle";
@@ -44,7 +44,7 @@ export default function BudgetsPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [summaryData, catData] = await Promise.all([
@@ -58,11 +58,11 @@ export default function BudgetsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [currentMonth]);
 
   useEffect(() => {
     loadData();
-  }, [currentMonth]);
+  }, [loadData]);
 
   function navigateMonth(direction: -1 | 1) {
     const [y, m] = currentMonth.split("-").map(Number);

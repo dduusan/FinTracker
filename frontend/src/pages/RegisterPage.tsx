@@ -39,9 +39,10 @@ export default function RegisterPage() {
       });
       toast.success("Account created! Please sign in.");
       navigate("/login");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
       const message =
-        err.response?.data?.error || "Registration failed.";
+        axiosErr.response?.data?.error || "Registration failed.";
       toast.error(message);
     } finally {
       setLoading(false);

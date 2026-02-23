@@ -30,9 +30,10 @@ export default function LoginPage() {
     try {
       await login(data);
       toast.success("Login successful!");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { error?: string } } };
       const message =
-        err.response?.data?.error || "Invalid email or password.";
+        axiosErr.response?.data?.error || "Invalid email or password.";
       toast.error(message);
     } finally {
       setLoading(false);

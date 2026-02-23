@@ -47,7 +47,7 @@ export default function MonthlyChart({ data }: Props) {
             tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
           />
           <Tooltip
-            formatter={(value: number) => formatCurrency(value)}
+            formatter={(value) => formatCurrency(value as number)}
             labelStyle={{ fontWeight: 600 }}
           />
           <Legend />

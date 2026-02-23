@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { SummaryResponse, MonthlyItem, CategorySpending, RecentTransaction } from "../api/dashboard";
 import { getSummary, getMonthly, getByCategory, getRecent } from "../api/dashboard";
 
@@ -23,7 +23,7 @@ export function useDashboard() {
     error: null,
   });
 
-  async function load() {
+  const load = useCallback(async () => {
     setData((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const [summary, monthly, byCategory, recent] = await Promise.all([
@@ -49,11 +49,13 @@ export function useDashboard() {
         error: "Failed to load data.",
       }));
     }
-  }
+  }, []);
 
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return { ...data, reload: load };
 }

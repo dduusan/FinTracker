@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   PieChart,
   Pie,
@@ -27,7 +27,7 @@ export default function CategoryPieChart({ initialData, initialTotal }: Props) {
   const [grandTotal, setGrandTotal] = useState(initialTotal);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const loadCategoryData = useCallback(async () => {
     if (activeType === "expense") {
       setData(initialData);
       setGrandTotal(initialTotal);
@@ -35,13 +35,18 @@ export default function CategoryPieChart({ initialData, initialTotal }: Props) {
     }
 
     setLoading(true);
-    getByCategory({ type: "income" })
-      .then((res) => {
-        setData(res.data);
-        setGrandTotal(res.grand_total);
-      })
-      .finally(() => setLoading(false));
+    try {
+      const res = await getByCategory({ type: "income" });
+      setData(res.data);
+      setGrandTotal(res.grand_total);
+    } finally {
+      setLoading(false);
+    }
   }, [activeType, initialData, initialTotal]);
+
+  useEffect(() => {
+    loadCategoryData();
+  }, [loadCategoryData]);
 
   const chartData = data.map((item, i) => ({
     name: `${item.icon ?? ""} ${item.category_name}`.trim(),
@@ -104,7 +109,7 @@ export default function CategoryPieChart({ initialData, initialTotal }: Props) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value) => formatCurrency(value as number)}
               />
               <Legend
                 formatter={(value) => (
