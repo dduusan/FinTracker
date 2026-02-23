@@ -16,24 +16,24 @@ export default function TransactionTable({ transactions, categories, onEdit, onD
   if (transactions.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
-        <p className="text-gray-400">Nema transakcija za prikaz.</p>
-        <p className="text-sm text-gray-300 mt-1">Dodaj prvu transakciju klikom na dugme iznad.</p>
+        <p className="text-gray-400">No transactions to display.</p>
+        <p className="text-sm text-gray-300 mt-1">Add your first transaction using the button above.</p>
       </div>
     );
   }
 
   return (
     <>
-      {/* Desktop tabela */}
+      {/* Desktop table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hidden md:block">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Datum</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Kategorija</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Opis</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-500">Tip</th>
-              <th className="text-right px-4 py-3 font-medium text-gray-500">Iznos</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500">Date</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500">Category</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500">Description</th>
+              <th className="text-left px-4 py-3 font-medium text-gray-500">Type</th>
+              <th className="text-right px-4 py-3 font-medium text-gray-500">Amount</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
@@ -59,7 +59,7 @@ export default function TransactionTable({ transactions, categories, onEdit, onD
                           : "bg-red-100 text-red-700"
                       }`}
                     >
-                      {tx.type === "income" ? "Prihod" : "Rashod"}
+                      {tx.type === "income" ? "Income" : "Expense"}
                     </span>
                   </td>
                   <td
@@ -93,7 +93,7 @@ export default function TransactionTable({ transactions, categories, onEdit, onD
         </table>
       </div>
 
-      {/* Mobilne kartice */}
+      {/* Mobile cards */}
       <div className="space-y-2 md:hidden">
         {transactions.map((tx) => {
           const category = categoryMap[tx.category_id];

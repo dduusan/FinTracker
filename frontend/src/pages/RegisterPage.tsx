@@ -37,11 +37,11 @@ export default function RegisterPage() {
         password: data.password,
         name: data.name || undefined,
       });
-      toast.success("Nalog je kreiran! Sada se prijavite.");
+      toast.success("Account created! Please sign in.");
       navigate("/login");
     } catch (err: any) {
       const message =
-        err.response?.data?.error || "Greška pri registraciji.";
+        err.response?.data?.error || "Registration failed.";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -54,13 +54,13 @@ export default function RegisterPage() {
         <h1 className="text-3xl font-bold text-center text-indigo-600 mb-2">
           FinTracker
         </h1>
-        <p className="text-center text-gray-500 mb-8">Kreiraj novi nalog</p>
+        <p className="text-center text-gray-500 mb-8">Create a new account</p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             id="name"
-            label="Ime (opciono)"
-            placeholder="Tvoje ime"
+            label="Name (optional)"
+            placeholder="Your name"
             error={errors.name?.message}
             {...register("name")}
           />
@@ -69,54 +69,54 @@ export default function RegisterPage() {
             id="email"
             label="Email"
             type="email"
-            placeholder="tvoj@email.com"
+            placeholder="your@email.com"
             error={errors.email?.message}
             {...register("email", {
-              required: "Email je obavezan",
+              required: "Email is required",
               pattern: {
                 value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: "Unesite validan email",
+                message: "Enter a valid email",
               },
             })}
           />
 
           <Input
             id="password"
-            label="Lozinka"
+            label="Password"
             type="password"
-            placeholder="Najmanje 6 karaktera"
+            placeholder="At least 6 characters"
             error={errors.password?.message}
             {...register("password", {
-              required: "Lozinka je obavezna",
+              required: "Password is required",
               minLength: {
                 value: 6,
-                message: "Lozinka mora imati najmanje 6 karaktera",
+                message: "Password must be at least 6 characters",
               },
             })}
           />
 
           <Input
             id="confirmPassword"
-            label="Potvrdi lozinku"
+            label="Confirm password"
             type="password"
-            placeholder="Ponovite lozinku"
+            placeholder="Repeat your password"
             error={errors.confirmPassword?.message}
             {...register("confirmPassword", {
-              required: "Potvrdite lozinku",
+              required: "Please confirm your password",
               validate: (value) =>
-                value === watch("password") || "Lozinke se ne poklapaju",
+                value === watch("password") || "Passwords do not match",
             })}
           />
 
           <Button type="submit" loading={loading} className="w-full">
-            Registruj se
+            Sign up
           </Button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Već imaš nalog?{" "}
+          Already have an account?{" "}
           <Link to="/login" className="text-indigo-600 hover:underline">
-            Prijavi se
+            Sign in
           </Link>
         </p>
       </div>

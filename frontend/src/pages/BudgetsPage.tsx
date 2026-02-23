@@ -25,15 +25,15 @@ function getMonthString(date: Date): string {
 
 function formatMonthLabel(dateStr: string): string {
   const months = [
-    "Januar", "Februar", "Mart", "April", "Maj", "Jun",
-    "Jul", "Avgust", "Septembar", "Oktobar", "Novembar", "Decembar",
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ];
   const [y, m] = dateStr.split("-");
   return `${months[Number(m) - 1]} ${y}`;
 }
 
 export default function BudgetsPage() {
-  usePageTitle("Budžeti");
+  usePageTitle("Budgets");
   const [currentMonth, setCurrentMonth] = useState(() => getMonthString(new Date()));
   const [summary, setSummary] = useState<BudgetSummaryItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -54,7 +54,7 @@ export default function BudgetsPage() {
       setSummary(summaryData);
       setCategories(catData);
     } catch {
-      toast.error("Greška pri učitavanju budžeta.");
+      toast.error("Failed to load budgets.");
     } finally {
       setLoading(false);
     }
@@ -74,12 +74,12 @@ export default function BudgetsPage() {
     setSaving(true);
     try {
       await createBudget(data);
-      toast.success("Budžet je dodat!");
+      toast.success("Budget created!");
       setFormOpen(false);
       loadData();
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      toast.error(message ?? "Greška pri dodavanju budžeta.");
+      toast.error(message ?? "Failed to create budget.");
     } finally {
       setSaving(false);
     }
@@ -90,12 +90,12 @@ export default function BudgetsPage() {
     setSaving(true);
     try {
       await updateBudget(editItem.id, { amount: data.amount });
-      toast.success("Budžet je izmenjen!");
+      toast.success("Budget updated!");
       setEditItem(null);
       loadData();
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      toast.error(message ?? "Greška pri izmeni budžeta.");
+      toast.error(message ?? "Failed to update budget.");
     } finally {
       setSaving(false);
     }
@@ -106,17 +106,17 @@ export default function BudgetsPage() {
     setDeleting(true);
     try {
       await deleteBudget(deleteItem.id);
-      toast.success("Budžet je obrisan!");
+      toast.success("Budget deleted!");
       setDeleteItem(null);
       loadData();
     } catch {
-      toast.error("Greška pri brisanju budžeta.");
+      toast.error("Failed to delete budget.");
     } finally {
       setDeleting(false);
     }
   }
 
-  // Ukupna statistika
+  // Total statistics
   const totalBudgeted = summary.reduce((acc, i) => acc + i.budgeted, 0);
   const totalSpent = summary.reduce((acc, i) => acc + i.spent, 0);
   const totalRemaining = totalBudgeted - totalSpent;
@@ -128,16 +128,16 @@ export default function BudgetsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header sa navigacijom meseca */}
+      {/* Header with month navigation */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Budžeti</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Budgets</h2>
         <Button onClick={() => setFormOpen(true)}>
           <Plus size={18} className="mr-1" />
-          Novi budžet
+          New Budget
         </Button>
       </div>
 
-      {/* Mesec navigacija */}
+      {/* Month navigation */}
       <div className="flex items-center justify-center gap-4">
         <button
           onClick={() => navigateMonth(-1)}
@@ -162,17 +162,17 @@ export default function BudgetsPage() {
         </div>
       ) : summary.length === 0 ? (
         <div className="bg-white rounded-xl border border-dashed border-gray-200 p-12 text-center">
-          <p className="text-gray-400 mb-2">Nema budžeta za ovaj mesec.</p>
-          <p className="text-gray-400 text-sm">Klikni "Novi budžet" da dodaš prvi.</p>
+          <p className="text-gray-400 mb-2">No budgets for this month.</p>
+          <p className="text-gray-400 text-sm">Click "New Budget" to add your first.</p>
         </div>
       ) : (
         <>
-          {/* Ukupna statistika */}
+          {/* Total statistics */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
             <div className="flex items-baseline justify-between mb-3">
-              <span className="text-sm font-medium text-gray-600">Ukupno:</span>
+              <span className="text-sm font-medium text-gray-600">Total:</span>
               <span className="text-sm text-gray-500">
-                {formatCurrency(totalSpent)} od {formatCurrency(totalBudgeted)}
+                {formatCurrency(totalSpent)} of {formatCurrency(totalBudgeted)}
               </span>
             </div>
             <div className="w-full bg-gray-100 rounded-full h-3 mb-2">
@@ -191,13 +191,13 @@ export default function BudgetsPage() {
               <span className="font-medium text-gray-500">{totalPercentage}%</span>
               <span className={totalRemaining >= 0 ? "text-green-600" : "text-red-600"}>
                 {totalRemaining >= 0
-                  ? `Preostalo: ${formatCurrency(totalRemaining)}`
-                  : `Prekoračenje: ${formatCurrency(Math.abs(totalRemaining))}`}
+                  ? `Remaining: ${formatCurrency(totalRemaining)}`
+                  : `Over budget: ${formatCurrency(Math.abs(totalRemaining))}`}
               </span>
             </div>
           </div>
 
-          {/* Grid sa karticama */}
+          {/* Budget cards grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {summary.map((item) => (
               <BudgetCard
@@ -211,7 +211,7 @@ export default function BudgetsPage() {
         </>
       )}
 
-      {/* Forma za kreiranje */}
+      {/* Create form */}
       <BudgetForm
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
@@ -222,7 +222,7 @@ export default function BudgetsPage() {
         loading={saving}
       />
 
-      {/* Forma za izmenu */}
+      {/* Edit form */}
       <BudgetForm
         isOpen={!!editItem}
         onClose={() => setEditItem(null)}
@@ -234,22 +234,22 @@ export default function BudgetsPage() {
         loading={saving}
       />
 
-      {/* Potvrda brisanja */}
+      {/* Delete confirmation */}
       <Modal
         isOpen={!!deleteItem}
         onClose={() => setDeleteItem(null)}
-        title="Obriši budžet"
+        title="Delete Budget"
       >
         <p className="text-sm text-gray-600 mb-6">
-          Da li si siguran da želiš da obrišeš budžet za{" "}
+          Are you sure you want to delete the budget for{" "}
           <strong>{deleteItem?.category_name}</strong>?
         </p>
         <div className="flex gap-3">
           <Button variant="secondary" onClick={() => setDeleteItem(null)} className="flex-1">
-            Otkaži
+            Cancel
           </Button>
           <Button variant="danger" onClick={handleDelete} loading={deleting} className="flex-1">
-            Obriši
+            Delete
           </Button>
         </div>
       </Modal>

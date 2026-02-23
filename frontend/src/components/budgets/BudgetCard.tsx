@@ -16,7 +16,7 @@ export default function BudgetCard({ item, onEdit, onDelete }: Props) {
   const isOverBudget = item.spent > item.budgeted;
   const overAmount = isOverBudget ? item.spent - item.budgeted : 0;
 
-  // Boja progress bara
+  // Progress bar color
   let barColor = "bg-green-500";
   if (percentage >= 90) barColor = "bg-red-500";
   else if (percentage >= 70) barColor = "bg-amber-500";
@@ -30,27 +30,27 @@ export default function BudgetCard({ item, onEdit, onDelete }: Props) {
           <button
             onClick={() => onEdit(item)}
             className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-            title="Izmeni"
+            title="Edit"
           >
             <Pencil size={15} />
           </button>
           <button
             onClick={() => onDelete(item)}
             className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-            title="Obriši"
+            title="Delete"
           >
             <Trash2 size={15} />
           </button>
         </div>
       </div>
 
-      {/* Iznosi */}
+      {/* Amounts */}
       <div className="flex items-baseline justify-between text-sm">
         <span className="text-gray-600">
-          Potrošeno: <span className="font-medium text-gray-900">{formatCurrency(item.spent)}</span>
+          Spent: <span className="font-medium text-gray-900">{formatCurrency(item.spent)}</span>
         </span>
         <span className="text-gray-500">
-          od {formatCurrency(item.budgeted)}
+          of {formatCurrency(item.budgeted)}
         </span>
       </div>
 
@@ -69,11 +69,11 @@ export default function BudgetCard({ item, onEdit, onDelete }: Props) {
         </span>
         {isOverBudget ? (
           <span className="text-red-600 font-medium">
-            Prekoračenje: {formatCurrency(overAmount)}
+            Over budget: {formatCurrency(overAmount)}
           </span>
         ) : (
           <span className="text-green-600">
-            Preostalo: {formatCurrency(item.remaining)}
+            Remaining: {formatCurrency(item.remaining)}
           </span>
         )}
       </div>

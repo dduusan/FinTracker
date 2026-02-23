@@ -9,28 +9,28 @@ interface Props {
 export default function SummaryCards({ data }: Props) {
   const cards = [
     {
-      label: "Ukupni prihodi",
+      label: "Total Income",
       value: formatCurrency(data.total_income),
       icon: TrendingUp,
       color: "text-green-600",
       bg: "bg-green-50",
     },
     {
-      label: "Ukupni rashodi",
+      label: "Total Expenses",
       value: formatCurrency(data.total_expense),
       icon: TrendingDown,
       color: "text-red-600",
       bg: "bg-red-50",
     },
     {
-      label: "Bilans",
+      label: "Balance",
       value: formatCurrency(data.balance),
       icon: Wallet,
       color: data.balance >= 0 ? "text-indigo-600" : "text-red-600",
       bg: data.balance >= 0 ? "bg-indigo-50" : "bg-red-50",
     },
     {
-      label: "Broj transakcija",
+      label: "Transactions",
       value: data.transaction_count.toString(),
       icon: ArrowLeftRight,
       color: "text-gray-600",

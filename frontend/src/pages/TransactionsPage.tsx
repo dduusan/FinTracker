@@ -27,7 +27,7 @@ const DEFAULT_FILTERS: TransactionFilters = {
 };
 
 export default function TransactionsPage() {
-  usePageTitle("Transakcije");
+  usePageTitle("Transactions");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [filters, setFilters] = useState<TransactionFilters>(DEFAULT_FILTERS);
@@ -44,7 +44,7 @@ export default function TransactionsPage() {
       const data = await getTransactions(filters);
       setTransactions(data);
     } catch {
-      toast.error("Greška pri učitavanju transakcija.");
+      toast.error("Failed to load transactions.");
     } finally {
       setLoading(false);
     }
@@ -62,12 +62,12 @@ export default function TransactionsPage() {
     setSaving(true);
     try {
       await createTransaction(data);
-      toast.success("Transakcija je dodana!");
+      toast.success("Transaction created!");
       setFormOpen(false);
       loadTransactions();
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      toast.error(message ?? "Greška pri dodavanju.");
+      toast.error(message ?? "Failed to create transaction.");
     } finally {
       setSaving(false);
     }
@@ -78,12 +78,12 @@ export default function TransactionsPage() {
     setSaving(true);
     try {
       await updateTransaction(editTx.id, data);
-      toast.success("Transakcija je izmenjena!");
+      toast.success("Transaction updated!");
       setEditTx(null);
       loadTransactions();
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      toast.error(message ?? "Greška pri izmeni.");
+      toast.error(message ?? "Failed to update transaction.");
     } finally {
       setSaving(false);
     }
@@ -94,11 +94,11 @@ export default function TransactionsPage() {
     setDeleting(true);
     try {
       await deleteTransaction(deleteTx.id);
-      toast.success("Transakcija je obrisana!");
+      toast.success("Transaction deleted!");
       setDeleteTx(null);
       loadTransactions();
     } catch {
-      toast.error("Greška pri brisanju.");
+      toast.error("Failed to delete transaction.");
     } finally {
       setDeleting(false);
     }
@@ -106,16 +106,14 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Transakcije</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Transactions</h2>
         <Button onClick={() => setFormOpen(true)}>
           <Plus size={18} className="mr-1" />
-          Nova transakcija
+          New Transaction
         </Button>
       </div>
 
-      {/* Filteri */}
       <TransactionFiltersComponent
         filters={filters}
         categories={categories}
@@ -123,7 +121,6 @@ export default function TransactionsPage() {
         onReset={() => setFilters(DEFAULT_FILTERS)}
       />
 
-      {/* Tabela */}
       {loading ? (
         <div className="flex justify-center py-16">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
@@ -137,7 +134,6 @@ export default function TransactionsPage() {
         />
       )}
 
-      {/* Forma za kreiranje */}
       <TransactionForm
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
@@ -146,7 +142,6 @@ export default function TransactionsPage() {
         loading={saving}
       />
 
-      {/* Forma za izmenu */}
       <TransactionForm
         isOpen={!!editTx}
         onClose={() => setEditTx(null)}
@@ -156,7 +151,6 @@ export default function TransactionsPage() {
         loading={saving}
       />
 
-      {/* Potvrda brisanja */}
       <DeleteConfirmModal
         isOpen={!!deleteTx}
         onClose={() => setDeleteTx(null)}

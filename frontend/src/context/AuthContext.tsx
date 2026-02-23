@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Pri ucitavanju: proveri da li postoji token i dohvati korisnika
+  // On load: check if token exists and fetch user
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (token) {
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth mora biti unutar AuthProvider-a");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

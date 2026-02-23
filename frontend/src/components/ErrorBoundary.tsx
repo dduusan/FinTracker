@@ -33,10 +33,10 @@ export default class ErrorBoundary extends Component<Props, State> {
               <span className="text-red-600 text-xl">!</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Nešto je pošlo naopako
+              Something went wrong
             </h3>
             <p className="text-sm text-gray-500 mb-4">
-              {this.state.error?.message ?? "Došlo je do neočekivane greške."}
+              {this.state.error?.message ?? "An unexpected error occurred."}
             </p>
             <button
               onClick={() => {
@@ -45,7 +45,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               }}
               className="inline-flex items-center px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition-colors"
             >
-              Osveži stranicu
+              Refresh page
             </button>
           </div>
         </div>

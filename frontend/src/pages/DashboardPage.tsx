@@ -7,7 +7,7 @@ import RecentTransactions from "../components/dashboard/RecentTransactions";
 import DashboardSkeleton from "../components/dashboard/DashboardSkeleton";
 
 export default function DashboardPage() {
-  usePageTitle("Pregled");
+  usePageTitle("Dashboard");
   const { summary, monthly, byCategory, grandTotal, recent, loading, error } =
     useDashboard();
 
@@ -25,7 +25,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Pregled</h2>
+      <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
 
       {/* Summary kartice */}
       {summary && <SummaryCards data={summary} />}

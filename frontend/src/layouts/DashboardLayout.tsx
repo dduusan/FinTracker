@@ -12,10 +12,10 @@ import {
 import { useAuth } from "../context/AuthContext";
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Pregled" },
-  { to: "/transactions", icon: ArrowLeftRight, label: "Transakcije" },
-  { to: "/categories", icon: Tag, label: "Kategorije" },
-  { to: "/budgets", icon: Wallet, label: "Budžeti" },
+  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/transactions", icon: ArrowLeftRight, label: "Transactions" },
+  { to: "/categories", icon: Tag, label: "Categories" },
+  { to: "/budgets", icon: Wallet, label: "Budgets" },
 ];
 
 export default function DashboardLayout() {
@@ -81,7 +81,7 @@ export default function DashboardLayout() {
             className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors"
           >
             <LogOut size={20} />
-            Odjavi se
+            Log out
           </button>
         </div>
       </aside>

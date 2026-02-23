@@ -15,7 +15,7 @@ import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
 
 export default function CategoriesPage() {
-  usePageTitle("Kategorije");
+  usePageTitle("Categories");
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -30,7 +30,7 @@ export default function CategoriesPage() {
       const data = await getCategories();
       setCategories(data);
     } catch {
-      toast.error("Greška pri učitavanju kategorija.");
+      toast.error("Failed to load categories.");
     } finally {
       setLoading(false);
     }
@@ -44,12 +44,12 @@ export default function CategoriesPage() {
     setSaving(true);
     try {
       await createCategory(data);
-      toast.success("Kategorija je dodana!");
+      toast.success("Category created!");
       setFormOpen(false);
       loadCategories();
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      toast.error(message ?? "Greška pri dodavanju.");
+      toast.error(message ?? "Failed to create category.");
     } finally {
       setSaving(false);
     }
@@ -60,12 +60,12 @@ export default function CategoriesPage() {
     setSaving(true);
     try {
       await updateCategory(editCat.id, data);
-      toast.success("Kategorija je izmenjena!");
+      toast.success("Category updated!");
       setEditCat(null);
       loadCategories();
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      toast.error(message ?? "Greška pri izmeni.");
+      toast.error(message ?? "Failed to update category.");
     } finally {
       setSaving(false);
     }
@@ -76,12 +76,12 @@ export default function CategoriesPage() {
     setDeleting(true);
     try {
       await deleteCategory(deleteCat.id);
-      toast.success("Kategorija je obrisana!");
+      toast.success("Category deleted!");
       setDeleteCat(null);
       loadCategories();
     } catch (err: unknown) {
       const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      toast.error(message ?? "Nije moguće obrisati kategoriju koja ima transakcije.");
+      toast.error(message ?? "Cannot delete a category that has transactions.");
     } finally {
       setDeleting(false);
     }
@@ -94,10 +94,10 @@ export default function CategoriesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Kategorije</h2>
+        <h2 className="text-2xl font-bold text-gray-900">Categories</h2>
         <Button onClick={() => setFormOpen(true)}>
           <Plus size={18} className="mr-1" />
-          Nova kategorija
+          New Category
         </Button>
       </div>
 
@@ -107,15 +107,15 @@ export default function CategoriesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Prihodi */}
+          {/* Income */}
           <section>
             <h3 className="text-sm font-semibold text-green-700 uppercase tracking-wide mb-3 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
-              Prihodi ({income.length})
+              Income ({income.length})
             </h3>
             {income.length === 0 ? (
               <div className="bg-white rounded-xl border border-dashed border-gray-200 p-8 text-center">
-                <p className="text-gray-400 text-sm">Nema kategorija prihoda.</p>
+                <p className="text-gray-400 text-sm">No income categories.</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -131,15 +131,15 @@ export default function CategoriesPage() {
             )}
           </section>
 
-          {/* Rashodi */}
+          {/* Expenses */}
           <section>
             <h3 className="text-sm font-semibold text-red-700 uppercase tracking-wide mb-3 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
-              Rashodi ({expense.length})
+              Expenses ({expense.length})
             </h3>
             {expense.length === 0 ? (
               <div className="bg-white rounded-xl border border-dashed border-gray-200 p-8 text-center">
-                <p className="text-gray-400 text-sm">Nema kategorija rashoda.</p>
+                <p className="text-gray-400 text-sm">No expense categories.</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -157,7 +157,7 @@ export default function CategoriesPage() {
         </div>
       )}
 
-      {/* Forma za kreiranje */}
+      {/* Create form */}
       <CategoryForm
         isOpen={formOpen}
         onClose={() => setFormOpen(false)}
@@ -165,7 +165,7 @@ export default function CategoriesPage() {
         loading={saving}
       />
 
-      {/* Forma za izmenu */}
+      {/* Edit form */}
       <CategoryForm
         isOpen={!!editCat}
         onClose={() => setEditCat(null)}
@@ -174,25 +174,25 @@ export default function CategoriesPage() {
         loading={saving}
       />
 
-      {/* Potvrda brisanja */}
+      {/* Delete confirmation */}
       <Modal
         isOpen={!!deleteCat}
         onClose={() => setDeleteCat(null)}
-        title="Obriši kategoriju"
+        title="Delete Category"
       >
         <p className="text-sm text-gray-600 mb-2">
-          Da li si siguran da želiš da obrišeš kategoriju{" "}
+          Are you sure you want to delete category{" "}
           <strong>{deleteCat?.name}</strong>?
         </p>
         <p className="text-sm text-amber-600 mb-6">
-          Kategorija se ne može obrisati ako ima transakcije vezane za nju.
+          A category cannot be deleted if it has linked transactions.
         </p>
         <div className="flex gap-3">
           <Button variant="secondary" onClick={() => setDeleteCat(null)} className="flex-1">
-            Otkaži
+            Cancel
           </Button>
           <Button variant="danger" onClick={handleDelete} loading={deleting} className="flex-1">
-            Obriši
+            Delete
           </Button>
         </div>
       </Modal>

@@ -12,7 +12,7 @@ export default function CategoryCard({ category, onEdit, onDelete }: Props) {
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center gap-3 hover:border-gray-300 transition-colors">
-      {/* Ikona */}
+      {/* Icon */}
       <div
         className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 ${
           isIncome ? "bg-green-50" : "bg-red-50"
@@ -29,23 +29,23 @@ export default function CategoryCard({ category, onEdit, onDelete }: Props) {
             isIncome ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
           }`}
         >
-          {isIncome ? "Prihod" : "Rashod"}
+          {isIncome ? "Income" : "Expense"}
         </span>
       </div>
 
-      {/* Akcije */}
+      {/* Actions */}
       <div className="flex items-center gap-1 flex-shrink-0">
         <button
           onClick={() => onEdit(category)}
           className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-          title="Izmeni"
+          title="Edit"
         >
           <Pencil size={15} />
         </button>
         <button
           onClick={() => onDelete(category)}
           className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-          title="Obriši"
+          title="Delete"
         >
           <Trash2 size={15} />
         </button>

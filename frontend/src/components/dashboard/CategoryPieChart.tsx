@@ -53,7 +53,7 @@ export default function CategoryPieChart({ initialData, initialTotal }: Props) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Po kategorijama</h3>
+        <h3 className="text-lg font-semibold text-gray-900">By Category</h3>
         <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setActiveType("expense")}
@@ -63,7 +63,7 @@ export default function CategoryPieChart({ initialData, initialTotal }: Props) {
                 : "text-gray-500"
             }`}
           >
-            Rashodi
+            Expenses
           </button>
           <button
             onClick={() => setActiveType("income")}
@@ -73,7 +73,7 @@ export default function CategoryPieChart({ initialData, initialTotal }: Props) {
                 : "text-gray-500"
             }`}
           >
-            Prihodi
+            Income
           </button>
         </div>
       </div>
@@ -84,7 +84,7 @@ export default function CategoryPieChart({ initialData, initialTotal }: Props) {
         </div>
       ) : chartData.length === 0 ? (
         <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
-          Nema podataka za prikaz
+          No data to display
         </div>
       ) : (
         <>
@@ -114,7 +114,7 @@ export default function CategoryPieChart({ initialData, initialTotal }: Props) {
             </PieChart>
           </ResponsiveContainer>
           <p className="text-center text-sm text-gray-500 mt-2">
-            Ukupno: <span className="font-semibold text-gray-900">{formatCurrency(grandTotal)}</span>
+            Total: <span className="font-semibold text-gray-900">{formatCurrency(grandTotal)}</span>
           </p>
         </>
       )}

@@ -54,7 +54,7 @@ export default function BudgetForm({
     }
   }, [isOpen, editData, reset]);
 
-  // Filtriraj samo expense kategorije koje jos nemaju budzet
+  // Filter only expense categories that don't have a budget yet
   const availableCategories = categories.filter(
     (c) => c.type === "expense" && !existingCategoryIds.includes(c.id)
   );
@@ -71,14 +71,14 @@ export default function BudgetForm({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEdit ? "Izmeni budžet" : "Novi budžet"}
+      title={isEdit ? "Edit Budget" : "New Budget"}
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        {/* Kategorija */}
+        {/* Category */}
         {isEdit ? (
           <Input
             id="category_display"
-            label="Kategorija"
+            label="Category"
             value={editData?.category_name ?? ""}
             disabled
           />
@@ -88,14 +88,14 @@ export default function BudgetForm({
               htmlFor="category_id"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Kategorija
+              Category
             </label>
             <select
               id="category_id"
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
-              {...register("category_id", { required: "Kategorija je obavezna" })}
+              {...register("category_id", { required: "Category is required" })}
             >
-              <option value="">Izaberi kategoriju...</option>
+              <option value="">Select a category...</option>
               {availableCategories.map((cat) => (
                 <option key={cat.id} value={String(cat.id)}>
                   {cat.icon ?? "📂"} {cat.name}
@@ -110,24 +110,24 @@ export default function BudgetForm({
 
         <Input
           id="amount"
-          label="Planirani iznos (RSD)"
+          label="Planned Amount (RSD)"
           type="number"
           step="0.01"
           min="1"
-          placeholder="Npr. 15000"
+          placeholder="e.g. 15000"
           error={errors.amount?.message}
           {...register("amount", {
-            required: "Iznos je obavezan",
-            min: { value: 1, message: "Iznos mora biti pozitivan" },
+            required: "Amount is required",
+            min: { value: 1, message: "Amount must be positive" },
           })}
         />
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
-            Otkaži
+            Cancel
           </Button>
           <Button type="submit" loading={loading} className="flex-1">
-            {isEdit ? "Sačuvaj" : "Dodaj"}
+            {isEdit ? "Save" : "Add"}
           </Button>
         </div>
       </form>

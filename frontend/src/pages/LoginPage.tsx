@@ -29,10 +29,10 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(data);
-      toast.success("Uspešna prijava!");
+      toast.success("Login successful!");
     } catch (err: any) {
       const message =
-        err.response?.data?.error || "Pogrešan email ili lozinka.";
+        err.response?.data?.error || "Invalid email or password.";
       toast.error(message);
     } finally {
       setLoading(false);
@@ -45,48 +45,48 @@ export default function LoginPage() {
         <h1 className="text-3xl font-bold text-center text-indigo-600 mb-2">
           FinTracker
         </h1>
-        <p className="text-center text-gray-500 mb-8">Prijavi se na svoj nalog</p>
+        <p className="text-center text-gray-500 mb-8">Sign in to your account</p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             id="email"
             label="Email"
             type="email"
-            placeholder="tvoj@email.com"
+            placeholder="your@email.com"
             error={errors.email?.message}
             {...register("email", {
-              required: "Email je obavezan",
+              required: "Email is required",
               pattern: {
                 value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: "Unesite validan email",
+                message: "Enter a valid email",
               },
             })}
           />
 
           <Input
             id="password"
-            label="Lozinka"
+            label="Password"
             type="password"
-            placeholder="Unesite lozinku"
+            placeholder="Enter your password"
             error={errors.password?.message}
             {...register("password", {
-              required: "Lozinka je obavezna",
+              required: "Password is required",
               minLength: {
                 value: 6,
-                message: "Lozinka mora imati najmanje 6 karaktera",
+                message: "Password must be at least 6 characters",
               },
             })}
           />
 
           <Button type="submit" loading={loading} className="w-full">
-            Prijavi se
+            Sign in
           </Button>
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Nemaš nalog?{" "}
+          Don't have an account?{" "}
           <Link to="/register" className="text-indigo-600 hover:underline">
-            Registruj se
+            Sign up
           </Link>
         </p>
       </div>

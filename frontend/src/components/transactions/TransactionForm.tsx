@@ -78,12 +78,12 @@ export default function TransactionForm({ isOpen, onClose, onSubmit, categories,
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEdit ? "Izmeni transakciju" : "Nova transakcija"}
+      title={isEdit ? "Edit Transaction" : "New Transaction"}
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        {/* Tip */}
+        {/* Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tip</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
           <div className="flex gap-2">
             {(["expense", "income"] as const).map((t) => (
               <label
@@ -97,37 +97,37 @@ export default function TransactionForm({ isOpen, onClose, onSubmit, categories,
                 }`}
               >
                 <input type="radio" value={t} {...register("type")} className="hidden" />
-                {t === "expense" ? "Rashod" : "Prihod"}
+                {t === "expense" ? "Expense" : "Income"}
               </label>
             ))}
           </div>
         </div>
 
-        {/* Iznos */}
+        {/* Amount */}
         <Input
           id="amount"
-          label="Iznos (RSD)"
+          label="Amount (RSD)"
           type="number"
           step="0.01"
           min="0.01"
           placeholder="0.00"
           error={errors.amount?.message}
           {...register("amount", {
-            required: "Iznos je obavezan",
-            min: { value: 0.01, message: "Iznos mora biti veći od 0" },
+            required: "Amount is required",
+            min: { value: 0.01, message: "Amount must be greater than 0" },
           })}
         />
 
-        {/* Kategorija */}
+        {/* Category */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Kategorija</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
           <select
             className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white ${
               errors.category_id ? "border-red-500" : "border-gray-300"
             }`}
-            {...register("category_id", { required: "Kategorija je obavezna" })}
+            {...register("category_id", { required: "Category is required" })}
           >
-            <option value="">Izaberi kategoriju</option>
+            <option value="">Select a category</option>
             {filteredCategories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.icon} {c.name}
@@ -139,29 +139,29 @@ export default function TransactionForm({ isOpen, onClose, onSubmit, categories,
           )}
         </div>
 
-        {/* Datum */}
+        {/* Date */}
         <Input
           id="date"
-          label="Datum"
+          label="Date"
           type="date"
           error={errors.date?.message}
-          {...register("date", { required: "Datum je obavezan" })}
+          {...register("date", { required: "Date is required" })}
         />
 
-        {/* Opis */}
+        {/* Description */}
         <Input
           id="description"
-          label="Opis (opciono)"
-          placeholder="Npr. Supermarket, Plata..."
+          label="Description (optional)"
+          placeholder="e.g. Supermarket, Salary..."
           {...register("description")}
         />
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
-            Otkaži
+            Cancel
           </Button>
           <Button type="submit" loading={loading} className="flex-1">
-            {isEdit ? "Sačuvaj" : "Dodaj"}
+            {isEdit ? "Save" : "Add"}
           </Button>
         </div>
       </form>

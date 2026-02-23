@@ -67,12 +67,12 @@ export default function CategoryForm({ isOpen, onClose, onSubmit, editData, load
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEdit ? "Izmeni kategoriju" : "Nova kategorija"}
+      title={isEdit ? "Edit Category" : "New Category"}
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        {/* Tip */}
+        {/* Type */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tip</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
           <div className="flex gap-2">
             {(["expense", "income"] as const).map((t) => (
               <label
@@ -86,25 +86,25 @@ export default function CategoryForm({ isOpen, onClose, onSubmit, editData, load
                 }`}
               >
                 <input type="radio" value={t} {...register("type")} className="hidden" />
-                {t === "expense" ? "Rashod" : "Prihod"}
+                {t === "expense" ? "Expense" : "Income"}
               </label>
             ))}
           </div>
         </div>
 
-        {/* Naziv */}
+        {/* Name */}
         <Input
           id="name"
-          label="Naziv"
-          placeholder="Npr. Hrana, Plata..."
+          label="Name"
+          placeholder="e.g. Food, Salary..."
           error={errors.name?.message}
-          {...register("name", { required: "Naziv je obavezan" })}
+          {...register("name", { required: "Name is required" })}
         />
 
-        {/* Ikona — brzi izbor */}
+        {/* Icon — quick pick */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Ikona
+            Icon
           </label>
           <div className="flex flex-wrap gap-2 mb-2">
             {COMMON_ICONS.map((icon) => (
@@ -124,17 +124,17 @@ export default function CategoryForm({ isOpen, onClose, onSubmit, editData, load
           </div>
           <Input
             id="icon"
-            placeholder="Ili upiši emoji..."
+            placeholder="Or type an emoji..."
             {...register("icon")}
           />
         </div>
 
         <div className="flex gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
-            Otkaži
+            Cancel
           </Button>
           <Button type="submit" loading={loading} className="flex-1">
-            {isEdit ? "Sačuvaj" : "Dodaj"}
+            {isEdit ? "Save" : "Add"}
           </Button>
         </div>
       </form>

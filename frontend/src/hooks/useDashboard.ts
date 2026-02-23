@@ -46,7 +46,7 @@ export function useDashboard() {
       setData((prev) => ({
         ...prev,
         loading: false,
-        error: "Greška pri učitavanju podataka.",
+        error: "Failed to load data.",
       }));
     }
   }

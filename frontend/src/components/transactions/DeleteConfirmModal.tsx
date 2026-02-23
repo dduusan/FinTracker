@@ -10,16 +10,16 @@ interface Props {
 
 export default function DeleteConfirmModal({ isOpen, onClose, onConfirm, loading }: Props) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Obriši transakciju">
+    <Modal isOpen={isOpen} onClose={onClose} title="Delete Transaction">
       <p className="text-sm text-gray-600 mb-6">
-        Da li si siguran da želiš da obrišeš ovu transakciju? Ova akcija se ne može poništiti.
+        Are you sure you want to delete this transaction? This action cannot be undone.
       </p>
       <div className="flex gap-3">
         <Button variant="secondary" onClick={onClose} className="flex-1">
-          Otkaži
+          Cancel
         </Button>
         <Button variant="danger" onClick={onConfirm} loading={loading} className="flex-1">
-          Obriši
+          Delete
         </Button>
       </div>
     </Modal>

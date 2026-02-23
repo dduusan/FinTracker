@@ -1,5 +1,5 @@
 ========================================================================
-  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-7)
+  FINTRACKER — LOG IMPLEMENTACIJE (Backend Faza 1-8 + Frontend Faza 1-9)
 ========================================================================
 
 REDOSLED KREIRANJA I OBJAŠNJENJA SVAKOG FAJLA:
@@ -1065,6 +1065,269 @@ KOMANDE ZA POKRETANJE I ZAUSTAVLJANJE:
     - Prihodi: poziva GET /api/dashboard/by-category?type=income
   → Spinner dok se podaci ucitavaju pri prebacivanju
   → Ukupan iznos se menja zavisno od tipa
+
+========================================================================
+========================================================================
+  FRONTEND — FAZA 8: Lokalizacija (srpski → engleski)
+========================================================================
+========================================================================
+
+========================================================================
+65. Prevod svih korisničkih stringova na engleski (Frontend Faza 8)
+========================================================================
+
+  → Kompletna aplikacija prevedena sa srpskog na engleski jezik
+  → NIJE uključen deploy (bez Docker frontend konfiguracije)
+  → Izmenjeni fajlovi:
+
+  frontend/index.html:
+    → lang="sr" → lang="en"
+
+  frontend/src/lib/utils.ts:
+    → Locale promenjen sa "sr-Latn-RS" na "en-US" za formatCurrency
+    → date-fns locale: sr → enUS
+    → Datum format: "dd. MMM yyyy." → "MMM dd, yyyy" (engleski stil)
+
+  frontend/src/layouts/DashboardLayout.tsx:
+    → Navigacija: Pregled→Dashboard, Transakcije→Transactions,
+      Kategorije→Categories, Budžeti→Budgets
+    → "Odjavi se" → "Log out"
+
+  frontend/src/pages/LoginPage.tsx:
+    → Svi stringovi: Prijava→Sign in, Lozinka→Password, itd.
+
+  frontend/src/pages/RegisterPage.tsx:
+    → Svi stringovi: Registracija→Sign up, Kreiraj nalog→Create account, itd.
+
+  frontend/src/pages/DashboardPage.tsx:
+    → usePageTitle("Pregled") → usePageTitle("Dashboard")
+
+  frontend/src/components/dashboard/SummaryCards.tsx:
+    → Ukupni prihodi→Total Income, Ukupni rashodi→Total Expenses,
+      Bilans→Balance, Broj transakcija→Transactions
+
+  frontend/src/components/dashboard/MonthlyChart.tsx:
+    → Mesečni trend→Monthly Trend, skraćenice meseci na engleskom
+
+  frontend/src/components/dashboard/CategoryPieChart.tsx:
+    → Po kategorijama→By Category, Rashodi/Prihodi→Expenses/Income
+
+  frontend/src/components/dashboard/RecentTransactions.tsx:
+    → Poslednje transakcije→Recent Transactions
+
+  frontend/src/pages/TransactionsPage.tsx:
+    → Sve poruke i labele na engleskom
+
+  frontend/src/components/transactions/TransactionFilters.tsx:
+    → Tip→Type, Svi→All, Prihodi→Income, Rashodi→Expense,
+      Kategorija→Category, Od→From, Do→To, Resetuj→Reset
+
+  frontend/src/components/transactions/TransactionForm.tsx:
+    → Nova transakcija→New Transaction, Izmeni→Edit Transaction,
+      Iznos→Amount, Kategorija→Category, Datum→Date, Opis→Description,
+      Otkaži→Cancel, Sačuvaj→Save, Dodaj→Add
+
+  frontend/src/components/transactions/DeleteConfirmModal.tsx:
+    → Obriši transakciju→Delete Transaction, sve poruke na engleskom
+
+  frontend/src/components/transactions/TransactionTable.tsx:
+    → Zaglavlja tabele: Datum→Date, Kategorija→Category, Opis→Description,
+      Tip→Type, Iznos→Amount, Prihod→Income, Rashod→Expense
+
+  frontend/src/pages/CategoriesPage.tsx:
+    → Kategorije→Categories, Nova kategorija→New Category,
+      Prihodi→Income, Rashodi→Expenses, sve toast poruke na engleskom
+
+  frontend/src/components/categories/CategoryForm.tsx:
+    → Izmeni kategoriju→Edit Category, Naziv→Name, Tip→Type,
+      Ikona→Icon, sve validacione poruke na engleskom
+
+  frontend/src/components/categories/CategoryCard.tsx:
+    → Prihod→Income, Rashod→Expense, Izmeni→Edit, Obriši→Delete
+
+  frontend/src/pages/BudgetsPage.tsx:
+    → Budžeti→Budgets, Novi budžet→New Budget, nazivi meseci na engleskom,
+      Ukupno→Total, Preostalo→Remaining, Prekoračenje→Over budget
+
+  frontend/src/components/budgets/BudgetForm.tsx:
+    → Izmeni budžet→Edit Budget, Kategorija→Category,
+      Planirani iznos→Planned Amount, sve validacije na engleskom
+
+  frontend/src/components/budgets/BudgetCard.tsx:
+    → Potrošeno→Spent, Preostalo→Remaining, Prekoračenje→Over budget
+
+  frontend/src/components/ErrorBoundary.tsx:
+    → Nešto je pošlo naopako→Something went wrong,
+      Osveži stranicu→Refresh page
+
+  frontend/src/hooks/useDashboard.ts:
+    → Greška pri učitavanju→Failed to load data
+
+  frontend/src/context/AuthContext.tsx:
+    → Error poruka na engleskom
+
+========================================================================
+========================================================================
+  FRONTEND — FAZA 9: Testovi, Docker, CI/CD
+========================================================================
+========================================================================
+
+========================================================================
+66. Frontend Unit Testovi — Vitest + React Testing Library
+========================================================================
+
+  → Alat: Vitest (brži od Jest-a, radi direktno sa Vite-om)
+  → @testing-library/react — testira komponente iz perspektive korisnika
+  → @testing-library/jest-dom — matcher-i za DOM (toBeVisible, toHaveClass, itd.)
+  → jsdom — simulira browser environment u Node.js-u
+
+  Instalirani paketi (devDependencies):
+    vitest, @testing-library/react, @testing-library/jest-dom,
+    @testing-library/user-event, jsdom
+
+  frontend/vitest.config.ts:
+    → Poseban config za testove (odvojen od vite.config.ts)
+    → environment: "jsdom" — simulira browser
+    → globals: true — describe/it/expect dostupni bez importa
+    → setupFiles: ["./src/tests/setup.ts"] — globalni setup
+    → css: false — ne procesira CSS u testovima (brže)
+
+  frontend/src/tests/setup.ts:
+    → Import @testing-library/jest-dom/vitest za custom matchere
+
+  frontend/src/tests/utils.test.ts: (8 testova)
+    → formatCurrency: formatira iznos sa RSD valutom
+    → formatDate: konvertuje ISO string u čitljiv datum
+    → cn: spaja CSS klase i uklanja duplikate (clsx + twMerge)
+
+  frontend/src/tests/Button.test.tsx: (7 testova)
+    → Renderuje tekst, onClick handler, disabled stanje,
+      loading spinner, varijante klasa
+
+  frontend/src/tests/Input.test.tsx: (5 testova)
+    → Label, placeholder, error poruka, crvena bordura, user input
+
+  frontend/src/tests/Modal.test.tsx: (4 testova)
+    → Sakriven kad zatvoren, prikazan kad otvoren,
+      onClose callback, blokira scroll
+
+  frontend/src/tests/ErrorBoundary.test.tsx: (2 testa)
+    → Renderuje decu, prikazuje error UI kad child baci grešku
+
+  Komande:
+    npm test          → pokreni sve unit testove (jednom)
+    npm run test:watch → pokreni u watch modu (testira promene)
+    npm run typecheck  → proveri TypeScript tipove
+
+  UKUPNO: 26 unit testova — svi prolaze ✓
+
+========================================================================
+67. Frontend Dockerfile — Multi-stage build sa Nginx
+========================================================================
+
+  → Multi-stage build: dva koraka u jednom Dockerfile-u
+  → Stage 1 (node:22-alpine): instalira zavisnosti + build-uje React app
+  → Stage 2 (nginx:alpine): kopira gotov build + servira preko Nginx-a
+  → Rezultat: mali Docker image (~30MB umesto ~800MB sa node_modules)
+
+  frontend/Dockerfile:
+    Stage 1 — Build:
+      FROM node:22-alpine AS build
+      → npm ci (instaliraj zavisnosti — brže od npm install)
+      → npm run build (kreira dist/ folder sa optimizovanim fajlovima)
+
+    Stage 2 — Serve:
+      FROM nginx:alpine
+      → Kopira nginx.conf konfiguraciju
+      → Kopira dist/ folder iz Stage 1 u nginx html folder
+      → Pokreće Nginx na portu 80
+
+  frontend/nginx.conf:
+    → SPA routing: try_files $uri $uri/ /index.html
+      (sve rute idu na index.html — React Router handluje routing)
+    → API proxy: /api/ → http://app:8000
+      (Nginx prosleđuje API pozive ka backend servisu u Dockeru)
+    → Cache za statičke fajlove: 1 godina (JS, CSS, slike, fontovi)
+
+  frontend/.dockerignore:
+    → Isključuje: node_modules, dist, .env, logove
+    → Smanjuje Docker build context (brži build)
+
+========================================================================
+68. CI/CD — GitHub Actions za Frontend
+========================================================================
+
+  .github/workflows/ci.yml:
+    → Dodat novi job: frontend-check
+    → Pokreće se na svaki push/PR ka main grani
+
+  frontend-check job:
+    → Setup Node.js 22 sa npm cache-om
+    → npm ci — instalacija zavisnosti
+    → npm run lint — ESLint provera koda
+    → npm run typecheck — TypeScript provera tipova
+    → npm test — Vitest unit testovi (26 testova)
+    → npm run build — provera da se projekat uspešno build-uje
+
+  docker job (ažuriran):
+    → needs: [test, lint, frontend-check] — čeka sve jobove
+    → docker build -t fintracker-frontend ./frontend
+    → Build-uje i backend i frontend Docker slike
+
+========================================================================
+69. E2E Testovi — Playwright
+========================================================================
+
+  → Playwright: end-to-end test framework od Microsoft-a
+  → Testira aplikaciju u pravom browser-u (Chromium)
+  → Pokreće Vite dev server automatski pre testova
+
+  Instalirani paketi:
+    @playwright/test — test runner + assertions
+    Chromium browser — instaliran sa npx playwright install chromium
+
+  frontend/playwright.config.ts:
+    → testDir: "./e2e" — folder sa E2E testovima
+    → baseURL: http://localhost:3000 — Vite dev server
+    → webServer: automatski pokreće npm run dev pre testova
+    → headless: true — bez vidljivog browser prozora
+    → screenshot: "only-on-failure" — pravi screenshot samo kad test padne
+
+  frontend/e2e/auth.spec.ts: (5 testova)
+    → Prikazuje login stranicu po defaultu
+    → Link ka register stranici radi
+    → Register stranica ima sva polja forme
+    → Validacija na prazan login submit
+    → Navigacija između login i register
+
+  frontend/e2e/navigation.spec.ts: (5 testova)
+    → Neautentifikovani korisnik se redirectuje na /login za: /, /transactions, /categories, /budgets
+    → Login stranica ima ispravan title (FinTracker)
+
+  Komande:
+    npm run test:e2e     → pokreni E2E testove (headless)
+    npm run test:e2e:ui  → pokreni sa Playwright UI (za debugging)
+
+  UKUPNO: 10 E2E testova — svi prolaze ✓
+
+========================================================================
+70. Docker Compose — Frontend servis
+========================================================================
+
+  backend/docker-compose.yml (ažuriran):
+    → Dodat novi servis: frontend
+    → build: ../frontend (koristi frontend/Dockerfile)
+    → ports: 80:80 (Nginx servira na portu 80)
+    → depends_on: app (čeka da backend bude spreman)
+    → Nginx prosleđuje /api/ pozive ka app:8000
+
+  Pokretanje cele aplikacije u Dockeru:
+    cd backend && docker compose up --build
+    → PostgreSQL na portu 5432
+    → Redis na portu 6379
+    → Backend (FastAPI) na portu 8000
+    → Frontend (Nginx) na portu 80
+    → Otvori http://localhost u browseru
 
 ========================================================================
 POKRETANJE CELE APLIKACIJE (Backend + Frontend):
